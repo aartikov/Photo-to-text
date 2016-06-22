@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Photo To Text</string>
+    <string name="choose_in_gallery">Choose in gallery</string>
+    <string name="take_a_photo">Take a photo</string>
+</resources>
