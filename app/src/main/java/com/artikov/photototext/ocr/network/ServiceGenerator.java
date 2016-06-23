@@ -61,7 +61,7 @@ public class ServiceGenerator {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request original = chain.request();
-                if(original.isHttps()) return chain.proceed(original);  // костыль! Для метода OrcApi.getResult не нужна авторизация
+                if(!"Basic".equals(original.header("Authorization"))) return chain.proceed(original);
 
                 Request.Builder requestBuilder = original.newBuilder()
                         .header("Authorization", basicAuthorization);
