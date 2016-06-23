@@ -17,7 +17,7 @@ import retrofit2.http.Url;
  */
 public interface OcrApi {
     @POST("processImage?exportFormat=txt")
-    Call<OcrResponse> processImage(@Body RequestBody image);
+    Call<OcrResponse> processImage(@Body RequestBody image, @Query("language") String language);
 
     @GET("getTaskStatus")
     Call<OcrResponse> getTaskStatus(@Query("taskId") String taskId);

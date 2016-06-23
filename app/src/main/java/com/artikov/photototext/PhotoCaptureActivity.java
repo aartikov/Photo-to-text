@@ -39,13 +39,13 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
 
     @OnClick(R.id.photo_capture_activity_button_choose_in_gallery)
     void chooseInGallery() {
-        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/MobPhoto_5.jpg");
+        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/IMG_0122.jpg", "English");
         startOcr(input);
     }
 
     @OnClick(R.id.photo_capture_activity_button_take_photo)
     void takePhoto() {
-        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/MobPhoto_5.jpg");
+        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/Russian/[Untitled]001.jpg", "Russian");
         startOcr(input);
     }
 

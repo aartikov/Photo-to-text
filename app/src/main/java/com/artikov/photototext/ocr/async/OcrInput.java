@@ -8,12 +8,17 @@ package com.artikov.photototext.ocr.async;
  */
 public class OcrInput {
     private String mImageFilePath;
+    private String mLanguage;
 
-    public OcrInput(String imageFilePath) {
+    public OcrInput(String imageFilePath, String language) {
         mImageFilePath = imageFilePath;
+        mLanguage = language;
     }
-
     public String getImageFilePath() {
         return mImageFilePath;
+    }
+
+    public String getLanguage() {
+        return mLanguage;
     }
 }

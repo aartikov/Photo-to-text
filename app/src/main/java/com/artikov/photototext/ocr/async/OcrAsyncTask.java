@@ -59,7 +59,8 @@ public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
             publishProgress(OcrProgress.UPLOADING);
             File imageFile = new File(input.getImageFilePath());
             RequestBody image = RequestBody.create(MediaType.parse("application/octet-stream"), imageFile);
-            Response<OcrResponse> processImageResponse = ocrService.processImage(image).execute();
+            String language = input.getLanguage();
+            Response<OcrResponse> processImageResponse = ocrService.processImage(image, language).execute();
             if(!processImageResponse.isSuccessful()) return new OcrResult("Error");
             OcrTask task = processImageResponse.body().getTask();
 
