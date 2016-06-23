@@ -9,9 +9,11 @@ import com.artikov.photototext.ocr.network.ServiceGenerator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Response;
 
 /**
@@ -58,15 +60,30 @@ public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
             File imageFile = new File(input.getImageFilePath());
             RequestBody image = RequestBody.create(MediaType.parse("application/octet-stream"), imageFile);
             Response<OcrResponse> processImageResponse = ocrService.processImage(image).execute();
-            if (!processImageResponse.isSuccessful()) {
-                OcrTask task = processImageResponse.body().getTask();
-                return new OcrResult(task.getId());
-            } else {
-                return new OcrResult("Error");
+            if(!processImageResponse.isSuccessful()) return new OcrResult("Error");
+            OcrTask task = processImageResponse.body().getTask();
+
+            publishProgress(OcrProgress.RECOGNITION);
+            while(!task.isCompleted() && !task.isInvalid()) {
+                TimeUnit.SECONDS.sleep(2);
+                Response<OcrResponse> taskStatusResponse = ocrService.getTaskStatus(task.getId()).execute();
+                if(!taskStatusResponse.isSuccessful()) return new OcrResult("Error");
+                task = taskStatusResponse.body().getTask();
             }
+            if(task.isInvalid()) return new OcrResult("Error");
+
+            publishProgress(OcrProgress.DOWNLOADING);
+            Response<ResponseBody> resultResponse = ocrService.getResult(task.getResultUrl()).execute();
+            if(!resultResponse.isSuccessful()) return new OcrResult("Error");
+            String result = resultResponse.body().string();
+            return new OcrResult(result);
+
         } catch (IOException e) {
             e.printStackTrace();
             return new OcrResult("Error");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return new OcrResult("");
         }
     }
 

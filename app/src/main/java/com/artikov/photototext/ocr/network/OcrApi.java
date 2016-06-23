@@ -1,9 +1,13 @@
 package com.artikov.photototext.ocr.network;
 
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
+import retrofit2.http.Url;
 
 /**
  * Date: 22/6/2016
@@ -12,6 +16,12 @@ import retrofit2.http.POST;
  * @author Artur Artikov
  */
 public interface OcrApi {
-    @POST("processImage")
+    @POST("processImage?exportFormat=txt")
     Call<OcrResponse> processImage(@Body RequestBody image);
+
+    @GET("getTaskStatus")
+    Call<OcrResponse> getTaskStatus(@Query("taskId") String taskId);
+
+    @GET
+    Call<ResponseBody> getResult(@Url String url);
 }
