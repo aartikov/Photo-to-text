@@ -7,10 +7,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.artikov.photototext.ocr.OcrAsyncTask;
-import com.artikov.photototext.ocr.OcrInput;
-import com.artikov.photototext.ocr.OcrProgress;
-import com.artikov.photototext.ocr.OcrResult;
+import com.artikov.photototext.ocr.async.OcrAsyncTask;
+import com.artikov.photototext.ocr.async.OcrInput;
+import com.artikov.photototext.ocr.async.OcrProgress;
+import com.artikov.photototext.ocr.async.OcrResult;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,12 +39,14 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
 
     @OnClick(R.id.photo_capture_activity_button_choose_in_gallery)
     void chooseInGallery() {
-        startOcr(null);
+        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/MobPhoto_5.jpg");
+        startOcr(input);
     }
 
     @OnClick(R.id.photo_capture_activity_button_take_photo)
     void takePhoto() {
-        startOcr(null);
+        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/MobPhoto_5.jpg");
+        startOcr(input);
     }
 
     private void startOcr(OcrInput input) {
