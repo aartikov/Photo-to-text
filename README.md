@@ -1,0 +1,1 @@
+Android application for coverting photo to text.
