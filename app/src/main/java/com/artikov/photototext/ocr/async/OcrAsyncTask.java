@@ -2,6 +2,8 @@ package com.artikov.photototext.ocr.async;
 
 import android.os.AsyncTask;
 
+import com.artikov.photototext.ocr.exceptions.InvalidResponseException;
+import com.artikov.photototext.ocr.exceptions.InvalidTaskStatusException;
 import com.artikov.photototext.ocr.network.OcrApi;
 import com.artikov.photototext.ocr.network.OcrResponse;
 import com.artikov.photototext.ocr.network.OcrTask;
@@ -9,7 +11,6 @@ import com.artikov.photototext.ocr.network.ServiceGenerator;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -23,7 +24,10 @@ import retrofit2.Response;
  * @author Artur Artikov
  */
 public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
+    private static final int TASK_STATUS_CHECKING_DELAY = 2000;
     private Listener mListener;
+    private OcrApi mOcrService;
+    private Exception mException;
 
     public interface Listener {
         void showProgress();
@@ -32,11 +36,14 @@ public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
 
         void updateProgress(OcrProgress progress);
 
-        void handleResult(OcrResult mResult);
+        void handleResult(OcrResult result);
+
+        void handleException(Exception exception);
     }
 
     public OcrAsyncTask(Listener listener) {
         mListener = listener;
+        mOcrService = ServiceGenerator.getInstance().createService(OcrApi.class);
     }
 
     public void setListener(Listener listener) {
@@ -54,38 +61,56 @@ public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
     protected OcrResult doInBackground(OcrInput... inputs) {
         OcrInput input = inputs[0];
         try {
-            OcrApi ocrService = ServiceGenerator.getInstance().createService(OcrApi.class);
-
             publishProgress(OcrProgress.UPLOADING);
-            File imageFile = new File(input.getImageFilePath());
-            RequestBody image = RequestBody.create(MediaType.parse("application/octet-stream"), imageFile);
-            String language = input.getLanguage();
-            Response<OcrResponse> processImageResponse = ocrService.processImage(image, language).execute();
-            if(!processImageResponse.isSuccessful()) return new OcrResult("Error");
-            OcrTask task = processImageResponse.body().getTask();
+            OcrTask task = processImage(input);
 
             publishProgress(OcrProgress.RECOGNITION);
-            while(!task.isCompleted() && !task.isInvalid()) {
-                TimeUnit.SECONDS.sleep(2);
-                Response<OcrResponse> taskStatusResponse = ocrService.getTaskStatus(task.getId()).execute();
-                if(!taskStatusResponse.isSuccessful()) return new OcrResult("Error");
-                task = taskStatusResponse.body().getTask();
+            while (!task.isCompleted() && !task.isInvalid()) {
+                Thread.sleep(TASK_STATUS_CHECKING_DELAY);
+                task = getTaskStatus(task);
             }
-            if(task.isInvalid()) return new OcrResult("Error");
+            if (task.isInvalid()) throw new InvalidTaskStatusException(task.getStatus());
 
             publishProgress(OcrProgress.DOWNLOADING);
-            Response<ResponseBody> resultResponse = ocrService.getResult(task.getResultUrl()).execute();
-            if(!resultResponse.isSuccessful()) return new OcrResult("Error");
-            String result = resultResponse.body().string();
-            return new OcrResult(result);
-
-        } catch (IOException e) {
+            return getResult(task);
+        } catch (IOException | InvalidResponseException | InvalidTaskStatusException e) {
             e.printStackTrace();
-            return new OcrResult("Error");
+            mException = e;
+            return null;
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return new OcrResult("");
+            return null;
         }
+    }
+
+    private OcrTask processImage(OcrInput input) throws IOException, InvalidResponseException {
+        String language = input.getLanguage();
+        File imageFile = new File(input.getImageFilePath());
+        MediaType mediaType = MediaType.parse("application/octet-stream");
+        RequestBody image = RequestBody.create(mediaType, imageFile);
+
+        Response<OcrResponse> response = mOcrService.processImage(image, language).execute();
+        if (!response.isSuccessful()) {
+            throw new InvalidResponseException(response.message());
+        }
+        return response.body().getTask();
+    }
+
+    private OcrTask getTaskStatus(OcrTask task) throws IOException, InvalidResponseException {
+        Response<OcrResponse> response = mOcrService.getTaskStatus(task.getId()).execute();
+        if (!response.isSuccessful()) {
+            throw new InvalidResponseException(response.message());
+        }
+        return response.body().getTask();
+    }
+
+    private OcrResult getResult(OcrTask task) throws IOException, InvalidResponseException {
+        Response<ResponseBody> response = mOcrService.getResult(task.getResultUrl()).execute();
+        if (!response.isSuccessful()) {
+            throw new InvalidResponseException("Failed to download result");
+        }
+        String text = response.body().string();
+        return new OcrResult(text);
     }
 
     @Override
@@ -98,6 +123,7 @@ public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
     protected void onPostExecute(OcrResult result) {
         super.onPostExecute(result);
         mListener.hideProgress();
-        mListener.handleResult(result);
+        if (mException != null) mListener.handleException(mException);
+        else if (result != null) mListener.handleResult(result);
     }
 }

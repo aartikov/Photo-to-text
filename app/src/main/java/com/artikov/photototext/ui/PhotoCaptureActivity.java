@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.artikov.photototext.R;
 import com.artikov.photototext.notes.Note;
@@ -105,5 +106,10 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
         Intent intent = new Intent(this, NoteActivity.class);
         intent.putExtra(NoteActivity.NOTE_EXTRA, note);
         startActivity(intent);
+    }
+
+    @Override
+    public void handleException(Exception exception) {
+        Toast.makeText(this, exception.getLocalizedMessage(), Toast.LENGTH_LONG).show();
     }
 }
