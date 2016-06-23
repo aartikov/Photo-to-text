@@ -1,12 +1,14 @@
-package com.artikov.photototext;
+package com.artikov.photototext.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.artikov.photototext.R;
+import com.artikov.photototext.notes.Note;
 import com.artikov.photototext.ocr.async.OcrAsyncTask;
 import com.artikov.photototext.ocr.async.OcrInput;
 import com.artikov.photototext.ocr.async.OcrProgress;
@@ -98,7 +100,10 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
 
     @Override
     public void handleResult(OcrResult result) {
-        Toast.makeText(this, result.getText(), Toast.LENGTH_SHORT).show();
         mOcrAsyncTask = null;
+        Note note = new Note(result.getText());
+        Intent intent = new Intent(this, NoteActivity.class);
+        intent.putExtra(NoteActivity.NOTE_EXTRA, note);
+        startActivity(intent);
     }
 }
