@@ -1,1 +1,1 @@
-Android application for coverting photo to text.
+Android application for converting photo to text.
