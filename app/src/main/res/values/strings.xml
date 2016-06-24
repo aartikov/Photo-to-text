@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Photo To Text</string>
 
+    <string name="notes">Notes</string>
+
     <string name="choose_in_gallery">Choose in gallery</string>
     <string name="take_a_photo">Take a photo</string>
     <string name="cancel">Cancel</string>
@@ -8,4 +10,6 @@
     <string name="uploading">Uploading...</string>
     <string name="downloading">Downloading...</string>
     <string name="recognition">Recognition...</string>
+
+    <string name="percent_template">%s %%</string>
 </resources>

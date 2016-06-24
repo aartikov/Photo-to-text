@@ -3,6 +3,9 @@ package com.artikov.photototext.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -14,6 +17,8 @@ import com.artikov.photototext.ocr.async.OcrAsyncTask;
 import com.artikov.photototext.ocr.async.OcrInput;
 import com.artikov.photototext.ocr.async.OcrProgress;
 import com.artikov.photototext.ocr.async.OcrResult;
+
+import java.util.Date;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -72,6 +77,24 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.main_menu_item_notes:
+                showNoteList();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
     public void showProgress() {
         buttonsLayout.setVisibility(View.GONE);
         progressLayout.setVisibility(View.VISIBLE);
@@ -102,14 +125,24 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
     @Override
     public void handleResult(OcrResult result) {
         mOcrAsyncTask = null;
-        Note note = new Note(result.getText());
-        Intent intent = new Intent(this, NoteActivity.class);
-        intent.putExtra(NoteActivity.NOTE_EXTRA, note);
-        startActivity(intent);
+        Note note = new Note("OCR", result.getText(), new Date());
+        showNote(note);
     }
 
     @Override
     public void handleException(Exception exception) {
         Toast.makeText(this, exception.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    private void showNote(Note note) {
+        Intent intent = new Intent(this, NoteActivity.class);
+        intent.putExtra(NoteActivity.NOTE_EXTRA, note);
+        startActivity(intent);
+    }
+
+    private void showNoteList() {
+        cancelOcr();
+        Intent intent = new Intent(this, NoteListActivity.class);
+        startActivity(intent);
     }
 }
