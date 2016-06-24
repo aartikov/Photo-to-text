@@ -13,10 +13,10 @@ import android.widget.Toast;
 
 import com.artikov.photototext.R;
 import com.artikov.photototext.notes.Note;
-import com.artikov.photototext.ocr.async.OcrAsyncTask;
-import com.artikov.photototext.ocr.async.OcrInput;
-import com.artikov.photototext.ocr.async.OcrProgress;
-import com.artikov.photototext.ocr.async.OcrResult;
+import com.artikov.photototext.ocr.OcrClient;
+import com.artikov.photototext.ocr.OcrInput;
+import com.artikov.photototext.ocr.OcrProgress;
+import com.artikov.photototext.ocr.OcrResult;
 
 import java.util.Date;
 
@@ -24,7 +24,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncTask.Listener {
+public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient.Listener {
     @BindView(R.id.photo_capture_activity_layout_buttons)
     ViewGroup buttonsLayout;
 
@@ -34,46 +34,38 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
     @BindView(R.id.photo_capture_activity_text_view_progress)
     TextView progressTextView;
 
-    private OcrAsyncTask mOcrAsyncTask;
+    private OcrClient mOcrClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.photo_capture_activity);
         ButterKnife.bind(this);
-        mOcrAsyncTask = (OcrAsyncTask) getLastCustomNonConfigurationInstance();
-        if(mOcrAsyncTask != null) mOcrAsyncTask.setListener(this);
+        mOcrClient = (OcrClient) getLastCustomNonConfigurationInstance();
+        if(mOcrClient == null) mOcrClient = new OcrClient(this);
+        else mOcrClient.setListener(this);
     }
 
     @OnClick(R.id.photo_capture_activity_button_choose_in_gallery)
     void chooseInGallery() {
         OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/IMG_0122.jpg", "English");
-        startOcr(input);
+        mOcrClient.recognize(input);
     }
 
     @OnClick(R.id.photo_capture_activity_button_take_photo)
     void takePhoto() {
         OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/Russian/[Untitled]001.jpg", "Russian");
-        startOcr(input);
-    }
-
-    private void startOcr(OcrInput input) {
-        cancelOcr();
-        mOcrAsyncTask = new OcrAsyncTask(this);
-        mOcrAsyncTask.execute(input);
+        mOcrClient.recognize(input);
     }
 
     @OnClick(R.id.photo_capture_activity_button_cancel)
     void cancelOcr() {
-        if (mOcrAsyncTask == null) return;
-        mOcrAsyncTask.cancel(true);
-        mOcrAsyncTask = null;
-        hideProgress();
+        mOcrClient.cancel();
     }
 
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
-        return mOcrAsyncTask;
+        return mOcrClient;
     }
 
     @Override
@@ -124,7 +116,6 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncT
 
     @Override
     public void handleResult(OcrResult result) {
-        mOcrAsyncTask = null;
         Note note = new Note("OCR", result.getText(), new Date());
         showNote(note);
     }

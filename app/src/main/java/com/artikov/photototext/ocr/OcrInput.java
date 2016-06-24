@@ -1,4 +1,4 @@
-package com.artikov.photototext.ocr.async;
+package com.artikov.photototext.ocr;
 
 /**
  * Date: 22/6/2016
