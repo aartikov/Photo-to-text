@@ -26,14 +26,20 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     private static final DateFormat DATE_FORMAT = DateFormat.getDateInstance(DateFormat.SHORT);
     Context mContext;
     List<Note> mNotes;
+    OnItemClickListener mOnItemClickListener;
 
-    public NoteAdapter(Context context, List<Note> notes) {
-        mContext = context;
-        mNotes = notes;
+    public interface OnItemClickListener {
+        void onItemClick(Note note, int position);
     }
 
-    public NoteAdapter(Context context) {
-        this(context, new ArrayList<Note>());
+    public NoteAdapter(Context context, List<Note> notes, OnItemClickListener onItemClickListener) {
+        mContext = context;
+        mNotes = notes;
+        mOnItemClickListener = onItemClickListener;
+    }
+
+    public NoteAdapter(Context context, OnItemClickListener onItemClickListener) {
+        this(context, new ArrayList<Note>(), onItemClickListener);
     }
 
     @Override
@@ -63,7 +69,12 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         mNotes = notes;
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public void removeItem(int position) {
+        mNotes.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.note_item_text_view_name)
         TextView nameTextView;
 
@@ -76,6 +87,13 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         public ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    mOnItemClickListener.onItemClick(getItem(position), position);
+                }
+            });
         }
     }
 }

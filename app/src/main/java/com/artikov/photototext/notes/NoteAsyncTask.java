@@ -65,7 +65,7 @@ public class NoteAsyncTask extends AsyncTask<Void, Integer, List<Note>> {
                 e.printStackTrace();
                 return new ArrayList<>();
             }
-            notes.add(new Note("Name " + i, "Text " + i, new Date()));
+            notes.add(new Note("Name " + i, "Text\nTeeext\nTeeeeext " + i, new Date()));
             publishProgress((i + 1) * 100 / NOTES_COUNT);
         }
         return notes;
