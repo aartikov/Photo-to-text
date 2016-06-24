@@ -90,13 +90,13 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     public void showProgress() {
         buttonsLayout.setVisibility(View.GONE);
         progressLayout.setVisibility(View.VISIBLE);
+        progressTextView.setText("");
     }
 
     @Override
     public void hideProgress() {
         buttonsLayout.setVisibility(View.VISIBLE);
         progressLayout.setVisibility(View.GONE);
-        progressTextView.setText("");
     }
 
     @Override

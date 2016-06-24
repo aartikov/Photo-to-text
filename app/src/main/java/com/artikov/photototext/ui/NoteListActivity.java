@@ -14,14 +14,14 @@ import android.widget.TextView;
 import com.artikov.photototext.R;
 import com.artikov.photototext.notes.Note;
 import com.artikov.photototext.notes.NoteAdapter;
-import com.artikov.photototext.notes.NoteAsyncTask;
+import com.artikov.photototext.notes.NoteLoader;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask.Listener {
+public class NoteListActivity extends AppCompatActivity implements NoteLoader.Listener {
     @BindView(R.id.note_list_activity_recycler_view_notes)
     RecyclerView mNotesRecyclerView;
 
@@ -35,7 +35,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
     TextView mProgressTextView;
 
     private NoteAdapter mAdapter;
-    private NoteAsyncTask mAsyncTask;
+    private NoteLoader mNoteLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +44,12 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
         ButterKnife.bind(this);
         initRecyclerView();
 
-        mAsyncTask = (NoteAsyncTask) getLastCustomNonConfigurationInstance();
-        if (mAsyncTask == null) {
-            mAsyncTask = new NoteAsyncTask(this);
-            mAsyncTask.execute();
+        mNoteLoader = (NoteLoader) getLastCustomNonConfigurationInstance();
+        if (mNoteLoader == null) {
+            mNoteLoader = new NoteLoader(this);
+            mNoteLoader.load();
         } else {
-            mAsyncTask.setListener(this);
+            mNoteLoader.setListener(this);
         }
     }
 
@@ -81,13 +81,13 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
 
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
-        return mAsyncTask;
+        return mNoteLoader;
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        mAsyncTask.cancel(true);
+        mNoteLoader.cancel();
     }
 
     @Override
