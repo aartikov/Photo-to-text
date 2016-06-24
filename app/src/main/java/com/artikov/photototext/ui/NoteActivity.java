@@ -13,8 +13,11 @@ import butterknife.ButterKnife;
 public class NoteActivity extends AppCompatActivity {
     public static final String NOTE_EXTRA = "NOTE";
 
-    @BindView(R.id.note_activity_edit_text_note_text)
-    EditText mNoteTextTextView;
+    @BindView(R.id.note_activity_edit_text_name)
+    EditText mNameEditText;
+
+    @BindView(R.id.note_activity_edit_text_text)
+    EditText mTextEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +25,7 @@ public class NoteActivity extends AppCompatActivity {
         setContentView(R.layout.note_activity);
         ButterKnife.bind(this);
         Note note = (Note) getIntent().getSerializableExtra(NOTE_EXTRA);
-        mNoteTextTextView.setText(note.getText());
+        mNameEditText.setText(note.getName());
+        mTextEditText.setText(note.getText());
     }
 }
