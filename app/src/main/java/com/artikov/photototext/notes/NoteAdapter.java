@@ -56,7 +56,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         holder.dateTextView.setText(DATE_FORMAT.format(note.getDate()));
     }
 
-    private Note getItem(int position) {
+    public Note getItem(int position) {
         return mNotes.get(position);
     }
 

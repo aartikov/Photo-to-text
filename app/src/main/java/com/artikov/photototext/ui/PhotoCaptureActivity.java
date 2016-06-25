@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.artikov.photototext.R;
 import com.artikov.photototext.notes.Note;
+import com.artikov.photototext.notes.db.NoteDataSource;
 import com.artikov.photototext.ocr.OcrClient;
 import com.artikov.photototext.ocr.OcrInput;
 import com.artikov.photototext.ocr.OcrProgress;
@@ -117,6 +118,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     @Override
     public void handleResult(OcrResult result) {
         Note note = new Note("OCR", result.getText(), new Date());
+        addNoteToDatabase(note);
         showNote(note);
     }
 
@@ -135,5 +137,12 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         cancelOcr();
         Intent intent = new Intent(this, NoteListActivity.class);
         startActivity(intent);
+    }
+
+    private void addNoteToDatabase(Note note) {
+        NoteDataSource dataSource = new NoteDataSource(this);
+        dataSource.open();
+        dataSource.add(note);
+        dataSource.close();
     }
 }

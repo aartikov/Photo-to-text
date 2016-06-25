@@ -1,11 +1,12 @@
 package com.artikov.photototext.notes;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
+import com.artikov.photototext.notes.db.NoteDataSource;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Date: 24/6/2016
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * @author Artur Artikov
  */
 public class NoteLoader {
-    private static final int NOTES_COUNT = 10;
+    private Context mContext;
     private Listener mListener;
     private NoteAsyncTask mAsyncTask;
     private List<Note> mNotes = new ArrayList<>();
@@ -24,12 +25,11 @@ public class NoteLoader {
 
         void hideProgress();
 
-        void updateProgress(int progress);
-
         void setResult(List<Note> notes);
     }
 
-    public NoteLoader(Listener listener) {
+    public NoteLoader(Context context, Listener listener) {
+        mContext = context;
         mListener = listener;
     }
 
@@ -54,28 +54,15 @@ public class NoteLoader {
         return mAsyncTask != null;
     }
 
-    public class NoteAsyncTask extends AsyncTask<Void, Integer, List<Note>> {
+    public class NoteAsyncTask extends AsyncTask<Void, Void, List<Note>> {
 
         @Override
         protected List<Note> doInBackground(Void... params) {
-            List<Note> notes = new ArrayList<>(NOTES_COUNT);
-            for (int i = 0; i < NOTES_COUNT; i++) {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(5000 / NOTES_COUNT);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return new ArrayList<>();
-                }
-                notes.add(new Note("Name " + i, "Text\nTeeext\nTeeeeext " + i, new Date()));
-                publishProgress((i + 1) * 100 / NOTES_COUNT);
-            }
+            NoteDataSource dataSource = new NoteDataSource(mContext);
+            dataSource.open();
+            List<Note> notes = dataSource.getAll();
+            dataSource.close();
             return notes;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            mListener.updateProgress(values[0]);
         }
 
         @Override

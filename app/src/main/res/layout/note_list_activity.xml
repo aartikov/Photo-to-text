@@ -27,9 +27,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"/>
         <TextView
-            android:id="@+id/note_list_activity_text_view_progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/loading"
             android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 </RelativeLayout>

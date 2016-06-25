@@ -9,12 +9,12 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.artikov.photototext.R;
 import com.artikov.photototext.notes.Note;
 import com.artikov.photototext.notes.NoteAdapter;
 import com.artikov.photototext.notes.NoteLoader;
+import com.artikov.photototext.notes.db.NoteDataSource;
 
 import java.util.List;
 
@@ -31,9 +31,6 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @BindView(R.id.note_list_activity_progress_bar)
     ProgressBar mProgressBar;
 
-    @BindView(R.id.note_list_activity_text_view_progress)
-    TextView mProgressTextView;
-
     private NoteAdapter mAdapter;
     private NoteLoader mNoteLoader;
 
@@ -46,7 +43,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
 
         mNoteLoader = (NoteLoader) getLastCustomNonConfigurationInstance();
         if (mNoteLoader == null) {
-            mNoteLoader = new NoteLoader(this);
+            mNoteLoader = new NoteLoader(getApplicationContext(), this);
             mNoteLoader.load();
         } else {
             mNoteLoader.setListener(this);
@@ -69,7 +66,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                mAdapter.removeItem(viewHolder.getAdapterPosition());
+                deleteNote(viewHolder.getAdapterPosition());
             }
         });
 
@@ -93,12 +90,6 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @Override
     public void showProgress() {
         mProgressLayout.setVisibility(View.VISIBLE);
-        mProgressTextView.setText(getString(R.string.percent_template, 0));
-    }
-
-    @Override
-    public void updateProgress(int progress) {
-        mProgressTextView.setText(getString(R.string.percent_template, progress));
     }
 
     @Override
@@ -115,5 +106,13 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
         Intent intent = new Intent(this, NoteActivity.class);
         intent.putExtra(NoteActivity.NOTE_EXTRA, note);
         startActivity(intent);
+    }
+
+    private void deleteNote(int position) {
+        NoteDataSource dataSource = new NoteDataSource(NoteListActivity.this);
+        dataSource.open();
+        dataSource.delete(mAdapter.getItem(position));
+        dataSource.close();
+        mAdapter.removeItem(position);
     }
 }
