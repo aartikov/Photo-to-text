@@ -25,11 +25,17 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @BindView(R.id.note_list_activity_recycler_view_notes)
     RecyclerView mNotesRecyclerView;
 
+    @BindView(R.id.note_list_activity_layout_list)
+    ViewGroup mListLayout;
+
     @BindView(R.id.note_list_activity_layout_progress)
     ViewGroup mProgressLayout;
 
     @BindView(R.id.note_list_activity_progress_bar)
     ProgressBar mProgressBar;
+
+    @BindView(R.id.note_list_activity_text_view_empty_view)
+    View mEmptyView;
 
     private NoteAdapter mAdapter;
     private NoteLoader mNoteLoader;
@@ -89,17 +95,20 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
 
     @Override
     public void showProgress() {
+        mListLayout.setVisibility(View.GONE);
         mProgressLayout.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void hideProgress() {
+        mListLayout.setVisibility(View.VISIBLE);
         mProgressLayout.setVisibility(View.GONE);
     }
 
     @Override
     public void setResult(List<Note> notes) {
         mAdapter.setNotes(notes);
+        checkEmptyState();
     }
 
     private void showNote(Note note) {
@@ -114,5 +123,16 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
         dataSource.delete(mAdapter.getItem(position));
         dataSource.close();
         mAdapter.removeItem(position);
+        checkEmptyState();
+    }
+
+    private void checkEmptyState() {
+        if(mAdapter.getItemCount() == 0) {
+            mNotesRecyclerView.setVisibility(View.GONE);
+            mEmptyView.setVisibility(View.VISIBLE);
+        } else {
+            mNotesRecyclerView.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
+        }
     }
 }

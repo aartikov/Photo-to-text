@@ -10,26 +10,42 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ui.NoteListActivity">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/note_list_activity_recycler_view_notes"
+    <FrameLayout
+        android:id="@+id/note_list_activity_layout_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/note_list_activity_recycler_view_notes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/note_list_activity_text_view_empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/no_notes"/>
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/note_list_activity_layout_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:orientation="vertical"
-        android:layout_centerInParent="true">
+        android:visibility="gone">
+
         <ProgressBar
             android:id="@+id/note_list_activity_progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/loading"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal"
+            android:text="@string/loading"/>
     </LinearLayout>
 </RelativeLayout>
