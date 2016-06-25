@@ -48,7 +48,7 @@ public class NoteDataSource {
         Cursor cursor = mDatabase.query(Note.Database.TABLE, null, null, null, null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Note note = converCursorToNote(cursor);
+            Note note = convertCursorToNote(cursor);
             notes.add(note);
             cursor.moveToNext();
         }
@@ -59,13 +59,16 @@ public class NoteDataSource {
     public void add(Note note) {
         if(mDatabase == null) throw new IllegalStateException("Database is not opened");
 
-        ContentValues values = new ContentValues();
-        values.put(Note.Database.Column.NAME, note.getName());
-        values.put(Note.Database.Column.TEXT, note.getText());
-        values.put(Note.Database.Column.DATE, DATE_FORMAT.format(note.getDate()));
-
+        ContentValues values = convertNoteToContentValues(note);
         long id = mDatabase.insert(Note.Database.TABLE, null, values);
         note.setId(id);
+    }
+
+    public void update(Note note) {
+        if(mDatabase == null) throw new IllegalStateException("Database is not opened");
+
+        ContentValues values = convertNoteToContentValues(note);
+        mDatabase.update(Note.Database.TABLE, values, Note.Database.Column.ID + " = ?", new String[]{String.valueOf(note.getId())});
     }
 
     public void delete(Note note) {
@@ -74,7 +77,16 @@ public class NoteDataSource {
         mDatabase.delete(Note.Database.TABLE, Note.Database.Column.ID + " = ?", new String[]{String.valueOf(note.getId())});
     }
 
-    private Note converCursorToNote(Cursor cursor) {
+    private ContentValues convertNoteToContentValues(Note note) {
+        ContentValues values = new ContentValues();
+        if(note.getId() != -1) values.put(Note.Database.Column.ID, note.getId());
+        values.put(Note.Database.Column.NAME, note.getName());
+        values.put(Note.Database.Column.TEXT, note.getText());
+        values.put(Note.Database.Column.DATE, DATE_FORMAT.format(note.getDate()));
+        return values;
+    }
+
+    private Note convertCursorToNote(Cursor cursor) {
         int idIndex = cursor.getColumnIndex(Note.Database.Column.ID);
         int nameIndex = cursor.getColumnIndex(Note.Database.Column.NAME);
         int textIndex = cursor.getColumnIndex(Note.Database.Column.TEXT);

@@ -1,11 +1,13 @@
 package com.artikov.photototext.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
 import com.artikov.photototext.R;
 import com.artikov.photototext.notes.Note;
+import com.artikov.photototext.notes.db.NoteDataSource;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,13 +21,52 @@ public class NoteActivity extends AppCompatActivity {
     @BindView(R.id.note_activity_edit_text_text)
     EditText mTextEditText;
 
+    Note mNote;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.note_activity);
         ButterKnife.bind(this);
-        Note note = (Note) getIntent().getSerializableExtra(NOTE_EXTRA);
-        mNameEditText.setText(note.getName());
-        mTextEditText.setText(note.getText());
+        mNote = (Note) getIntent().getSerializableExtra(NOTE_EXTRA);
+        mNameEditText.setText(mNote.getName());
+        mTextEditText.setText(mNote.getText());
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (noteEdited()) {
+            updateNote();
+            setNoteToResult();
+        }
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onStop() {
+        if (noteEdited()) updateNote();
+        super.onStop();
+    }
+
+    private boolean noteEdited() {
+        if (!mNote.getName().equals(mNameEditText.getText().toString())) return true;
+        if (!mNote.getText().equals(mTextEditText.getText().toString())) return true;
+        return false;
+    }
+
+    private void setNoteToResult() {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(NOTE_EXTRA, mNote);
+        setResult(RESULT_OK, resultIntent);
+    }
+
+    private void updateNote() {
+        mNote.setName(mNameEditText.getText().toString());
+        mNote.setText(mTextEditText.getText().toString());
+
+        NoteDataSource dataSource = new NoteDataSource(this);
+        dataSource.open();
+        dataSource.update(mNote);
+        dataSource.close();
     }
 }

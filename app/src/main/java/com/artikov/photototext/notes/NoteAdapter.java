@@ -75,6 +75,11 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         notifyItemRemoved(position);
     }
 
+    public void setItem(int position, Note note) {
+        mNotes.set(position, note);
+        notifyItemChanged(position);
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.note_item_text_view_name)
         TextView nameTextView;

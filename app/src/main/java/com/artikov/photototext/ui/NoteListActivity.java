@@ -22,6 +22,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class NoteListActivity extends AppCompatActivity implements NoteLoader.Listener {
+    private static final int SHOW_NOTE_REQUEST_CODE = 1;
+    private static final java.lang.String SELECTED_POSITION_TAG = "SELECTED_POSITION";
+
     @BindView(R.id.note_list_activity_recycler_view_notes)
     RecyclerView mNotesRecyclerView;
 
@@ -39,6 +42,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
 
     private NoteAdapter mAdapter;
     private NoteLoader mNoteLoader;
+    private int mSelectedPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +64,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
         NoteAdapter.OnItemClickListener onItemClickListener = new NoteAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Note note, int position) {
+                mSelectedPosition = position;
                 showNote(note);
             }
         };
@@ -85,6 +90,28 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
         return mNoteLoader;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SELECTED_POSITION_TAG, mSelectedPosition);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mSelectedPosition = savedInstanceState.getInt(SELECTED_POSITION_TAG, -1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == SHOW_NOTE_REQUEST_CODE && resultCode == RESULT_OK && data != null && mSelectedPosition != -1) {
+            Note note = (Note) data.getSerializableExtra(NoteActivity.NOTE_EXTRA);
+            mAdapter.setItem(mSelectedPosition, note);
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -114,7 +141,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     private void showNote(Note note) {
         Intent intent = new Intent(this, NoteActivity.class);
         intent.putExtra(NoteActivity.NOTE_EXTRA, note);
-        startActivity(intent);
+        startActivityForResult(intent, SHOW_NOTE_REQUEST_CODE);
     }
 
     private void deleteNote(int position) {
@@ -127,7 +154,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     }
 
     private void checkEmptyState() {
-        if(mAdapter.getItemCount() == 0) {
+        if (mAdapter.getItemCount() == 0) {
             mNotesRecyclerView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
         } else {
