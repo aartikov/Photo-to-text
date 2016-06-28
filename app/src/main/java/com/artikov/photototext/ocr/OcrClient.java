@@ -86,7 +86,7 @@ public class OcrClient {
                 }
 
                 publishProgress(OcrProgress.DOWNLOADING);
-                return getResult(task);
+                return getResult(input, task);
             } catch (IOException | InvalidResponseException | InvalidTaskStatusException e) {
                 e.printStackTrace();
                 mException = e;
@@ -118,13 +118,13 @@ public class OcrClient {
             return response.body().getTask();
         }
 
-        private OcrResult getResult(OcrTask task) throws IOException, InvalidResponseException {
+        private OcrResult getResult(OcrInput input, OcrTask task) throws IOException, InvalidResponseException {
             Response<ResponseBody> response = mOcrService.getResult(task.getResultUrl()).execute();
             if (!response.isSuccessful()) {
                 throw new InvalidResponseException("Failed to download result");
             }
             String text = response.body().string();
-            return new OcrResult(text);
+            return new OcrResult(input, text);
         }
 
         @Override

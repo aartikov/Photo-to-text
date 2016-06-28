@@ -18,6 +18,7 @@ import com.artikov.photototext.ocr.OcrClient;
 import com.artikov.photototext.ocr.OcrInput;
 import com.artikov.photototext.ocr.OcrProgress;
 import com.artikov.photototext.ocr.OcrResult;
+import com.artikov.photototext.utils.FileNameUtils;
 
 import java.util.Date;
 
@@ -117,7 +118,9 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @Override
     public void handleResult(OcrResult result) {
-        Note note = new Note("OCR", result.getText(), new Date());
+        String path = result.getInput().getImageFilePath();
+        String name = FileNameUtils.getFileNameWithoutExtension(path);
+        Note note = new Note(name, result.getText(), new Date());
         addNoteToDatabase(note);
         showNote(note);
     }

@@ -7,10 +7,16 @@ package com.artikov.photototext.ocr;
  * @author Artur Artikov
  */
 public class OcrResult {
+    private OcrInput mInput;
     private String mText;
 
-    public OcrResult(String text) {
+    public OcrResult(OcrInput input, String text) {
+        mInput = input;
         mText = text;
+    }
+
+    public OcrInput getInput() {
+        return mInput;
     }
 
     public String getText() {
