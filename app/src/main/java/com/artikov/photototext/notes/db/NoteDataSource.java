@@ -56,7 +56,7 @@ public class NoteDataSource {
         return notes;
     }
 
-    public void add(Note note) {
+    public void create(Note note) {
         if(mDatabase == null) throw new IllegalStateException("Database is not opened");
 
         ContentValues values = convertNoteToContentValues(note);
