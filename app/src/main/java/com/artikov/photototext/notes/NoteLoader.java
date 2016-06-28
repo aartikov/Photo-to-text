@@ -39,10 +39,10 @@ public class NoteLoader {
         else mListener.setResult(mNotes);
     }
 
-    public void load() {
+    public void load(String searchString) {
         cancel();
         mAsyncTask = new NoteAsyncTask();
-        mAsyncTask.execute();
+        mAsyncTask.execute(searchString);
         mListener.showProgress();
     }
 
@@ -54,13 +54,14 @@ public class NoteLoader {
         return mAsyncTask != null;
     }
 
-    public class NoteAsyncTask extends AsyncTask<Void, Void, List<Note>> {
+    public class NoteAsyncTask extends AsyncTask<String, Void, List<Note>> {
 
         @Override
-        protected List<Note> doInBackground(Void... params) {
+        protected List<Note> doInBackground(String... params) {
+            String searchString = params[0];
             NoteDataSource dataSource = new NoteDataSource(mContext);
             dataSource.open();
-            List<Note> notes = dataSource.getAll();
+            List<Note> notes = searchString.isEmpty() ? dataSource.getAll() : dataSource.search(searchString);
             dataSource.close();
             return notes;
         }

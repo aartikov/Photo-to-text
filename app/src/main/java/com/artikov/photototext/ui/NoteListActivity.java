@@ -5,7 +5,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -54,7 +57,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
         mNoteLoader = (NoteLoader) getLastCustomNonConfigurationInstance();
         if (mNoteLoader == null) {
             mNoteLoader = new NoteLoader(getApplicationContext(), this);
-            mNoteLoader.load();
+            mNoteLoader.load("");
         } else {
             mNoteLoader.setListener(this);
         }
@@ -102,6 +105,27 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mSelectedPosition = savedInstanceState.getInt(SELECTED_POSITION_TAG, -1);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.note_list_menu, menu);
+        final MenuItem searchMenuItem = menu.findItem( R.id.note_list_menu_item_search);
+        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchMenuItem.collapseActionView();
+                mNoteLoader.load(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        return true;
     }
 
     @Override

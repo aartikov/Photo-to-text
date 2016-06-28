@@ -56,6 +56,24 @@ public class NoteDataSource {
         return notes;
     }
 
+    public List<Note> search(String searchString) {
+        if(mDatabase == null) throw new IllegalStateException("Database is not opened");
+
+        List<Note> notes = new ArrayList<>();
+        String searchTemplate = "%" + searchString + "%";
+        String selection = String.format("%s like ? or %s like ?", Note.Database.Column.NAME, Note.Database.Column.TEXT);
+        String[] selectionArgs = {searchTemplate, searchTemplate};
+        Cursor cursor = mDatabase.query(Note.Database.TABLE, null, selection, selectionArgs, null, null, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Note note = convertCursorToNote(cursor);
+            notes.add(note);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return notes;
+    }
+
     public void create(Note note) {
         if(mDatabase == null) throw new IllegalStateException("Database is not opened");
 
