@@ -65,8 +65,6 @@ public class NoteActivity extends AppCompatActivity {
         mNote.setText(mTextEditText.getText().toString());
 
         NoteDataSource dataSource = new NoteDataSource(this);
-        dataSource.open();
         dataSource.update(mNote);
-        dataSource.close();
     }
 }

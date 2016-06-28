@@ -170,9 +170,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
 
     private void deleteNote(int position) {
         NoteDataSource dataSource = new NoteDataSource(NoteListActivity.this);
-        dataSource.open();
         dataSource.delete(mAdapter.getItem(position));
-        dataSource.close();
         mAdapter.removeItem(position);
         checkEmptyState();
     }

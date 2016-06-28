@@ -35,7 +35,7 @@ public class NoteLoader {
 
     public void setListener(Listener listener) {
         mListener = listener;
-        if(isRunning()) mListener.showProgress();
+        if (isRunning()) mListener.showProgress();
         else mListener.setResult(mNotes);
     }
 
@@ -47,7 +47,7 @@ public class NoteLoader {
     }
 
     public void cancel() {
-        if(isRunning()) mAsyncTask.cancel(true);
+        if (isRunning()) mAsyncTask.cancel(true);
     }
 
     public boolean isRunning() {
@@ -60,10 +60,7 @@ public class NoteLoader {
         protected List<Note> doInBackground(String... params) {
             String searchString = params[0];
             NoteDataSource dataSource = new NoteDataSource(mContext);
-            dataSource.open();
-            List<Note> notes = searchString.isEmpty() ? dataSource.getAll() : dataSource.search(searchString);
-            dataSource.close();
-            return notes;
+            return searchString.isEmpty() ? dataSource.getAll() : dataSource.search(searchString);
         }
 
         @Override
@@ -78,7 +75,7 @@ public class NoteLoader {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            if(mAsyncTask == this) {
+            if (mAsyncTask == this) {
                 mAsyncTask = null;
                 mListener.hideProgress();
             }

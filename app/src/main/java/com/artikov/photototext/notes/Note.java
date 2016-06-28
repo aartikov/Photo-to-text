@@ -2,7 +2,13 @@ package com.artikov.photototext.notes;
 
 import android.database.sqlite.SQLiteDatabase;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.DatabaseTable;
+import com.j256.ormlite.table.TableUtils;
+
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Date;
 
 /**
@@ -11,13 +17,25 @@ import java.util.Date;
  *
  * @author Artur Artikov
  */
+
+@DatabaseTable(tableName = Note.Database.TABLE)
 public class Note implements Serializable {
-    private long mId;
+    @DatabaseField(columnName = Database.Column.ID, generatedId = true)
+    private int mId;
+
+    @DatabaseField(columnName = Database.Column.NAME)
     private String mName;
+
+    @DatabaseField(columnName = Database.Column.TEXT)
     private String mText;
+
+    @DatabaseField(columnName = Database.Column.DATE)
     private Date mDate;
 
-    public Note(long id, String name, String text, Date date) {
+    public Note() {
+    }
+
+    public Note(int id, String name, String text, Date date) {
         mId = id;
         mName = name;
         mText = text;
@@ -28,11 +46,11 @@ public class Note implements Serializable {
         this(-1, name, text, date);
     }
 
-    public long getId() {
+    public int getId() {
         return mId;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         mId = id;
     }
 
@@ -70,17 +88,11 @@ public class Note implements Serializable {
             public static final String DATE = "date";
         }
 
-        private static final String sCreateCommand = "create table " + TABLE + " ("
-                + Column.ID + " integer primary key autoincrement,"
-                + Column.NAME + " text,"
-                + Column.TEXT + " text,"
-                + Column.DATE + " text"  + ");";
-
-        public static void onCreate(SQLiteDatabase db) {
-            db.execSQL(sCreateCommand);
+        static public void onCreate(SQLiteDatabase database, ConnectionSource connectionSource) throws SQLException {
+            TableUtils.createTable(connectionSource, Note.class);
         }
 
-        public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        static public void onUpgrade(SQLiteDatabase database, ConnectionSource connectionSource, int oldVersion, int newVersion) throws SQLException {
         }
     }
 }

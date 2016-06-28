@@ -142,8 +142,6 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     private void addNoteToDatabase(Note note) {
         NoteDataSource dataSource = new NoteDataSource(this);
-        dataSource.open();
         dataSource.create(note);
-        dataSource.close();
     }
 }
