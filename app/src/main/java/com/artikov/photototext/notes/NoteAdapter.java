@@ -24,6 +24,8 @@ import butterknife.ButterKnife;
  */
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     private static final DateFormat DATE_FORMAT = DateFormat.getDateInstance(DateFormat.SHORT);
+
+    //TODO почему эти поля не private?
     Context mContext;
     List<Note> mNotes;
     OnItemClickListener mOnItemClickListener;

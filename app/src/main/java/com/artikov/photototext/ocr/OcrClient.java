@@ -78,7 +78,7 @@ public class OcrClient {
 
                 publishProgress(OcrProgress.RECOGNITION);
                 while (!task.isCompleted() && !task.isInvalid()) {
-                    Thread.sleep(TASK_STATUS_CHECKING_DELAY);
+                    Thread.sleep(TASK_STATUS_CHECKING_DELAY); //TODO лучше использовать TimeUnit
                     task = getTaskStatus(task);
                 }
                 if (task.isInvalid()) {

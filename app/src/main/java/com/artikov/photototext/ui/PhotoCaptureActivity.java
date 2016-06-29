@@ -43,6 +43,8 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         setContentView(R.layout.photo_capture_activity);
         ButterKnife.bind(this);
         mOcrClient = (OcrClient) getLastCustomNonConfigurationInstance();
+
+        //TODO скобки в if'e
         if(mOcrClient == null) mOcrClient = new OcrClient(this);
         else mOcrClient.setListener(this);
     }
