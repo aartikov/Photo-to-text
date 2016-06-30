@@ -27,13 +27,13 @@ import butterknife.OnClick;
 
 public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient.Listener {
     @BindView(R.id.photo_capture_activity_layout_buttons)
-    ViewGroup buttonsLayout;
+    ViewGroup mButtonsLayout;
 
     @BindView(R.id.photo_capture_activity_layout_progress)
-    ViewGroup progressLayout;
+    ViewGroup mProgressLayout;
 
     @BindView(R.id.photo_capture_activity_text_view_progress)
-    TextView progressTextView;
+    TextView mProgressTextView;
 
     private OcrClient mOcrClient;
 
@@ -44,9 +44,11 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         ButterKnife.bind(this);
         mOcrClient = (OcrClient) getLastCustomNonConfigurationInstance();
 
-        //TODO скобки в if'e
-        if(mOcrClient == null) mOcrClient = new OcrClient(this);
-        else mOcrClient.setListener(this);
+        if (mOcrClient == null) {
+            mOcrClient = new OcrClient(this);
+        } else {
+            mOcrClient.setListener(this);
+        }
     }
 
     @OnClick(R.id.photo_capture_activity_button_choose_in_gallery)
@@ -90,28 +92,28 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @Override
     public void showProgress() {
-        buttonsLayout.setVisibility(View.GONE);
-        progressLayout.setVisibility(View.VISIBLE);
-        progressTextView.setText("");
+        mButtonsLayout.setVisibility(View.GONE);
+        mProgressLayout.setVisibility(View.VISIBLE);
+        mProgressTextView.setText("");
     }
 
     @Override
     public void hideProgress() {
-        buttonsLayout.setVisibility(View.VISIBLE);
-        progressLayout.setVisibility(View.GONE);
+        mButtonsLayout.setVisibility(View.VISIBLE);
+        mProgressLayout.setVisibility(View.GONE);
     }
 
     @Override
     public void updateProgress(OcrProgress progress) {
         switch (progress) {
             case UPLOADING:
-                progressTextView.setText(R.string.uploading);
+                mProgressTextView.setText(R.string.uploading);
                 break;
             case RECOGNITION:
-                progressTextView.setText(R.string.recognition);
+                mProgressTextView.setText(R.string.recognition);
                 break;
             case DOWNLOADING:
-                progressTextView.setText(R.string.downloading);
+                mProgressTextView.setText(R.string.downloading);
                 break;
         }
     }

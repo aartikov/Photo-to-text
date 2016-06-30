@@ -11,6 +11,7 @@ import com.artikov.photototext.ocr.network.ServiceGenerator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -78,7 +79,7 @@ public class OcrClient {
 
                 publishProgress(OcrProgress.RECOGNITION);
                 while (!task.isCompleted() && !task.isInvalid()) {
-                    Thread.sleep(TASK_STATUS_CHECKING_DELAY); //TODO лучше использовать TimeUnit
+                    TimeUnit.MILLISECONDS.sleep(TASK_STATUS_CHECKING_DELAY);
                     task = getTaskStatus(task);
                 }
                 if (task.isInvalid()) {

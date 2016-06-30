@@ -35,17 +35,11 @@ public class NoteLoader {
 
     public void setListener(Listener listener) {
         mListener = listener;
-
-        //TODO хорошая привычка, это обрамлять скобками ветки if'a даже если там одна строка.
-        /*
         if (isRunning()) {
             mListener.showProgress();
         } else {
             mListener.setResult(mNotes);
         }
-        */
-        if (isRunning()) mListener.showProgress();
-        else mListener.setResult(mNotes);
     }
 
     public void load(String searchString) {

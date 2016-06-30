@@ -24,11 +24,10 @@ import butterknife.ButterKnife;
  */
 public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
     private static final DateFormat DATE_FORMAT = DateFormat.getDateInstance(DateFormat.SHORT);
-
-    //TODO почему эти поля не private?
-    Context mContext;
-    List<Note> mNotes;
-    OnItemClickListener mOnItemClickListener;
+    
+    private Context mContext;
+    private List<Note> mNotes;
+    private OnItemClickListener mOnItemClickListener;
 
     public interface OnItemClickListener {
         void onItemClick(Note note, int position);
