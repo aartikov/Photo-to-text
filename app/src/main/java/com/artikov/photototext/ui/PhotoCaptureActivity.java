@@ -1,7 +1,10 @@
 package com.artikov.photototext.ui;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
@@ -25,6 +28,7 @@ import com.artikov.photototext.ocr.OcrProgress;
 import com.artikov.photototext.ocr.OcrResult;
 import com.artikov.photototext.utils.FileNameUtils;
 
+import java.io.File;
 import java.util.Date;
 
 import butterknife.BindView;
@@ -32,6 +36,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient.Listener, NavigationView.OnNavigationItemSelectedListener {
+    private static final int CHOOSE_IN_GALLERY_REQUEST_CODE = 1;
+    private static final int TAKE_PHOTO_REQUEST_CODE = 2;
+
     @BindView(R.id.photo_capture_activity_layout_buttons)
     ViewGroup mButtonsLayout;
 
@@ -48,8 +55,8 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     NavigationView mNavigationView;
 
     private ActionBarDrawerToggle mDrawerToggle;
-
     private OcrClient mOcrClient;
+    private Uri mPhotoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,16 +65,18 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         ButterKnife.bind(this);
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        mDrawerLayout.addDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
+        if(actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+            mDrawerLayout.addDrawerListener(mDrawerToggle);
+            mDrawerToggle.syncState();
+        }
 
         mNavigationView.setNavigationItemSelectedListener(this);
 
         mOcrClient = (OcrClient) getLastCustomNonConfigurationInstance();
         if (mOcrClient == null) {
-            mOcrClient = new OcrClient(this);
+            mOcrClient = new OcrClient(getApplicationContext(), this);
         } else {
             mOcrClient.setListener(this);
         }
@@ -75,19 +84,44 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @OnClick(R.id.photo_capture_activity_button_choose_in_gallery)
     void chooseInGallery() {
-        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/English/Mobile_Photos/IMG_0122.jpg", "English");
-        mOcrClient.recognize(input);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, CHOOSE_IN_GALLERY_REQUEST_CODE);
+        }
     }
 
     @OnClick(R.id.photo_capture_activity_button_take_photo)
     void takePhoto() {
-        OcrInput input = new OcrInput("/sdcard/Download/Picture_samples/Russian/[Untitled]001.jpg", "Russian");
-        mOcrClient.recognize(input);
+        File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getString(R.string.default_photo_name));
+        mPhotoUri = Uri.fromFile(photoFile);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(intent, TAKE_PHOTO_REQUEST_CODE);
+        }
     }
 
     @OnClick(R.id.photo_capture_activity_button_cancel)
     void cancelOcr() {
         mOcrClient.cancel();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CHOOSE_IN_GALLERY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                OcrInput input = new OcrInput(data.getData(), "English,Russian");
+                mOcrClient.recognize(input);
+            }
+        } else if (requestCode == TAKE_PHOTO_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                OcrInput input = new OcrInput(mPhotoUri, "English,Russian");
+                mOcrClient.recognize(input);
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -172,8 +206,8 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @Override
     public void handleResult(OcrResult result) {
-        String path = result.getInput().getImageFilePath();
-        String name = FileNameUtils.getFileNameWithoutExtension(path);
+        Uri uri = result.getInput().getImageUri();
+        String name = FileNameUtils.getName(this, uri);
         Note note = new Note(name, result.getText(), new Date());
         addNoteToDatabase(note);
         showNote(note);

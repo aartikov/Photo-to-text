@@ -1,5 +1,7 @@
 package com.artikov.photototext.ocr;
 
+import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 
 import com.artikov.photototext.ocr.exceptions.InvalidResponseException;
@@ -9,8 +11,8 @@ import com.artikov.photototext.ocr.network.OcrResponse;
 import com.artikov.photototext.ocr.network.OcrTask;
 import com.artikov.photototext.ocr.network.ServiceGenerator;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
@@ -26,6 +28,7 @@ import retrofit2.Response;
  */
 public class OcrClient {
     private static final int TASK_STATUS_CHECKING_DELAY = 2000;
+    private final Context mContext;
     private Listener mListener;
     private OcrAsyncTask mAsyncTask;
     private OcrApi mOcrService;
@@ -42,14 +45,15 @@ public class OcrClient {
         void handleException(Exception exception);
     }
 
-    public OcrClient(Listener listener) {
+    public OcrClient(Context context, Listener listener) {
+        mContext = context;
         mListener = listener;
         mOcrService = ServiceGenerator.getInstance().createService(OcrApi.class);
     }
 
     public void setListener(Listener listener) {
         mListener = listener;
-        if(isRunning()) mListener.showProgress();
+        if (isRunning()) mListener.showProgress();
     }
 
     public void recognize(OcrInput input) {
@@ -64,7 +68,7 @@ public class OcrClient {
     }
 
     public void cancel() {
-        if(isRunning()) mAsyncTask.cancel(true);
+        if (isRunning()) mAsyncTask.cancel(true);
     }
 
     private class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
@@ -100,15 +104,36 @@ public class OcrClient {
 
         private OcrTask processImage(OcrInput input) throws IOException, InvalidResponseException {
             String language = input.getLanguage();
-            File imageFile = new File(input.getImageFilePath());
+            byte[] imageData = readImage(input.getImageUri());
             MediaType mediaType = MediaType.parse("application/octet-stream");
-            RequestBody image = RequestBody.create(mediaType, imageFile);
+            RequestBody image = RequestBody.create(mediaType, imageData);
 
             Response<OcrResponse> response = mOcrService.processImage(image, language).execute();
             if (!response.isSuccessful()) {
                 throw new InvalidResponseException(response.message());
             }
             return response.body().getTask();
+        }
+
+        private byte[] readImage(Uri imageUri) throws IOException {
+            InputStream stream = mContext.getContentResolver().openInputStream(imageUri);
+            byte[] data = new byte[stream.available()];
+
+            try {
+                int offset = 0;
+                while (true) {
+                    if (offset >= data.length) break;
+                    int count = stream.read(data, offset, data.length - offset);
+                    if (count < 0) break;
+                    offset += count;
+                }
+                if (offset < data.length) {
+                    throw new IOException("Could not read image " + imageUri);
+                }
+            } finally {
+                stream.close();
+            }
+            return data;
         }
 
         private OcrTask getTaskStatus(OcrTask task) throws IOException, InvalidResponseException {
@@ -149,7 +174,7 @@ public class OcrClient {
         @Override
         protected void onCancelled() {
             super.onCancelled();
-            if(mAsyncTask == this) {
+            if (mAsyncTask == this) {
                 mAsyncTask = null;
                 mListener.hideProgress();
             }

@@ -1,5 +1,7 @@
 package com.artikov.photototext.ocr;
 
+import android.net.Uri;
+
 /**
  * Date: 22/6/2016
  * Time: 16:41
@@ -7,15 +9,15 @@ package com.artikov.photototext.ocr;
  * @author Artur Artikov
  */
 public class OcrInput {
-    private String mImageFilePath;
+    private Uri mImageUri;
     private String mLanguage;
 
-    public OcrInput(String imageFilePath, String language) {
-        mImageFilePath = imageFilePath;
+    public OcrInput(Uri imageUri, String language) {
+        mImageUri = imageUri;
         mLanguage = language;
     }
-    public String getImageFilePath() {
-        return mImageFilePath;
+    public Uri getImageUri() {
+        return mImageUri;
     }
 
     public String getLanguage() {

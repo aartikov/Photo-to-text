@@ -6,6 +6,7 @@
     <string name="choose_in_gallery">Choose in gallery</string>
     <string name="take_a_photo">Take a photo</string>
     <string name="cancel">Cancel</string>
+    <string name="default_photo_name">Photo.jpg</string>
 
     <string name="uploading">Uploading...</string>
     <string name="downloading">Downloading...</string>
