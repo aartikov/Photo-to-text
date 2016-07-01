@@ -28,19 +28,19 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     private static final int SHOW_NOTE_REQUEST_CODE = 1;
     private static final java.lang.String SELECTED_POSITION_TAG = "SELECTED_POSITION";
 
-    @BindView(R.id.note_list_activity_recycler_view_notes)
+    @BindView(R.id.activity_note_list_recycler_view_notes)
     RecyclerView mNotesRecyclerView;
 
-    @BindView(R.id.note_list_activity_layout_list)
+    @BindView(R.id.activity_note_list_layout_list)
     ViewGroup mListLayout;
 
-    @BindView(R.id.note_list_activity_layout_progress)
+    @BindView(R.id.activity_note_list_layout_progress)
     ViewGroup mProgressLayout;
 
-    @BindView(R.id.note_list_activity_progress_bar)
+    @BindView(R.id.activity_note_list_progress_bar)
     ProgressBar mProgressBar;
 
-    @BindView(R.id.note_list_activity_text_view_empty_view)
+    @BindView(R.id.activity_note_list_text_view_empty_view)
     View mEmptyView;
 
     private NoteAdapter mAdapter;
@@ -50,7 +50,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.note_list_activity);
+        setContentView(R.layout.activity_note_list);
         ButterKnife.bind(this);
         initRecyclerView();
 

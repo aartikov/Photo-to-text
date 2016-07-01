@@ -12,14 +12,14 @@
     tools:context=".ui.NoteActivity">
 
     <EditText
-        android:id="@+id/note_activity_edit_text_name"
+        android:id="@+id/activity_note_edit_text_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="text"/>
 
 
     <EditText
-        android:id="@+id/note_activity_edit_text_text"
+        android:id="@+id/activity_note_edit_text_text"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"

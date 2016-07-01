@@ -39,19 +39,19 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     private static final int CHOOSE_IN_GALLERY_REQUEST_CODE = 1;
     private static final int TAKE_PHOTO_REQUEST_CODE = 2;
 
-    @BindView(R.id.photo_capture_activity_layout_buttons)
+    @BindView(R.id.activity_photo_capture_layout_buttons)
     ViewGroup mButtonsLayout;
 
-    @BindView(R.id.photo_capture_activity_layout_progress)
+    @BindView(R.id.activity_photo_capture_layout_progress)
     ViewGroup mProgressLayout;
 
-    @BindView(R.id.photo_capture_activity_text_view_progress)
+    @BindView(R.id.activity_photo_capture_text_view_progress)
     TextView mProgressTextView;
 
-    @BindView(R.id.photo_capture_activity_drawer_layout)
+    @BindView(R.id.activity_photo_capture_drawer_layout)
     DrawerLayout mDrawerLayout;
 
-    @BindView(R.id.photo_capture_activity_navigation_view)
+    @BindView(R.id.activity_photo_capture_navigation_view)
     NavigationView mNavigationView;
 
     private ActionBarDrawerToggle mDrawerToggle;
@@ -61,7 +61,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.photo_capture_activity);
+        setContentView(R.layout.activity_photo_capture);
         ButterKnife.bind(this);
 
         ActionBar actionBar = getSupportActionBar();
@@ -82,7 +82,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         }
     }
 
-    @OnClick(R.id.photo_capture_activity_button_choose_in_gallery)
+    @OnClick(R.id.activity_photo_capture_button_choose_in_gallery)
     void chooseInGallery() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
@@ -91,7 +91,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         }
     }
 
-    @OnClick(R.id.photo_capture_activity_button_take_photo)
+    @OnClick(R.id.activity_photo_capture_button_take_photo)
     void takePhoto() {
         File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getString(R.string.default_photo_name));
         mPhotoUri = Uri.fromFile(photoFile);
@@ -102,7 +102,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         }
     }
 
-    @OnClick(R.id.photo_capture_activity_button_cancel)
+    @OnClick(R.id.activity_photo_capture_button_cancel)
     void cancelOcr() {
         mOcrClient.cancel();
     }
@@ -131,7 +131,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
+        getMenuInflater().inflate(R.menu.photo_capture_menu, menu);
         return true;
     }
 
@@ -142,7 +142,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         }
 
         switch (item.getItemId()) {
-            case R.id.main_menu_item_notes:
+            case R.id.photo_capture_menu_item_notes:
                 showNoteList();
                 return true;
             default:
