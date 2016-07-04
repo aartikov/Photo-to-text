@@ -23,8 +23,8 @@ public class ServiceGenerator {
     private static final String APPLICATION_ID = "Photo to text";
     private static final String PASSWORD = "WVpAfih/LoYIN/CpWk8oGF2U";
 
-    static private ServiceGenerator sInstance;
-    static private Retrofit sRetrofit;
+    volatile static private ServiceGenerator sInstance;
+    private Retrofit mRetrofit;
 
     private ServiceGenerator() {
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -36,7 +36,7 @@ public class ServiceGenerator {
                 .addInterceptor(authorizationInterceptor)
                 .build();
 
-        sRetrofit = new Retrofit.Builder()
+        mRetrofit = new Retrofit.Builder()
                 .client(client)
                 .addConverterFactory(SimpleXmlConverterFactory.create())
                 .baseUrl(BASE_URL).build();
@@ -44,13 +44,17 @@ public class ServiceGenerator {
 
     static public ServiceGenerator getInstance() {
         if (sInstance == null) {
-            sInstance = new ServiceGenerator();
+            synchronized (ServiceGenerator.class) {
+                if (sInstance == null) {
+                    sInstance = new ServiceGenerator();
+                }
+            }
         }
         return sInstance;
     }
 
     public <T> T createService(Class<T> serviceClass) {
-        return sRetrofit.create(serviceClass);
+        return mRetrofit.create(serviceClass);
     }
 
     private Interceptor createAuthorizationInterceptor() {

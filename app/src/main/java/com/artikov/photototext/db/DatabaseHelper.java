@@ -19,7 +19,7 @@ import java.sql.SQLException;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     private static final String NAME = "PhotoToText.db";
     private static final int VERSION = 1;
-    private static DatabaseHelper sInstance;
+    volatile private static DatabaseHelper sInstance;
 
     private Dao<Note, Integer> mNoteDao;
 
@@ -29,7 +29,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     static public DatabaseHelper getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new DatabaseHelper(context);
+            synchronized (DatabaseHelper.class) {
+                if (sInstance == null) {
+                    sInstance = new DatabaseHelper(context);
+                }
+            }
         }
         return sInstance;
     }
