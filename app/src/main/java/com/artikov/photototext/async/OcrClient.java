@@ -1,15 +1,18 @@
-package com.artikov.photototext.ocr;
+package com.artikov.photototext.async;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 
-import com.artikov.photototext.ocr.exceptions.InvalidResponseException;
-import com.artikov.photototext.ocr.exceptions.InvalidTaskStatusException;
-import com.artikov.photototext.ocr.network.OcrApi;
-import com.artikov.photototext.ocr.network.OcrResponse;
-import com.artikov.photototext.ocr.network.OcrTask;
-import com.artikov.photototext.ocr.network.ServiceGenerator;
+import com.artikov.photototext.data.OcrInput;
+import com.artikov.photototext.data.OcrProgress;
+import com.artikov.photototext.data.OcrResult;
+import com.artikov.photototext.network.exceptions.InvalidResponseException;
+import com.artikov.photototext.network.exceptions.InvalidTaskStatusException;
+import com.artikov.photototext.network.OcrApi;
+import com.artikov.photototext.data.ocr_internal.OcrResponse;
+import com.artikov.photototext.data.ocr_internal.OcrTask;
+import com.artikov.photototext.network.ServiceGenerator;
 
 import java.io.IOException;
 import java.io.InputStream;

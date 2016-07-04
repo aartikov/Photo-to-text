@@ -1,4 +1,4 @@
-package com.artikov.photototext.ocr.network;
+package com.artikov.photototext.network;
 
 import android.util.Base64;
 

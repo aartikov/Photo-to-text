@@ -1,4 +1,4 @@
-package com.artikov.photototext.notes;
+package com.artikov.photototext.ui.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.artikov.photototext.R;
+import com.artikov.photototext.data.Note;
 
 import java.text.DateFormat;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
-package com.artikov.photototext.notes.db;
+package com.artikov.photototext.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.artikov.photototext.notes.Note;
+import com.artikov.photototext.data.Note;
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;

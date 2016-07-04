@@ -1,4 +1,6 @@
-package com.artikov.photototext.ocr.network;
+package com.artikov.photototext.network;
+
+import com.artikov.photototext.data.ocr_internal.OcrResponse;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;

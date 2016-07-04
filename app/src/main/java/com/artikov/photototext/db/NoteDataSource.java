@@ -1,8 +1,8 @@
-package com.artikov.photototext.notes.db;
+package com.artikov.photototext.db;
 
 import android.content.Context;
 
-import com.artikov.photototext.notes.Note;
+import com.artikov.photototext.data.Note;
 
 import java.sql.SQLException;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package com.artikov.photototext.ui;
+package com.artikov.photototext.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,10 +14,10 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.artikov.photototext.R;
-import com.artikov.photototext.notes.Note;
-import com.artikov.photototext.notes.NoteAdapter;
-import com.artikov.photototext.notes.NoteLoader;
-import com.artikov.photototext.notes.db.NoteDataSource;
+import com.artikov.photototext.data.Note;
+import com.artikov.photototext.ui.adapters.NoteAdapter;
+import com.artikov.photototext.async.NoteLoader;
+import com.artikov.photototext.db.NoteDataSource;
 
 import java.util.List;
 

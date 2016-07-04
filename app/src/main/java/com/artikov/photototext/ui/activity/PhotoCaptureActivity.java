@@ -1,4 +1,4 @@
-package com.artikov.photototext.ui;
+package com.artikov.photototext.ui.activity;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -14,12 +14,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artikov.photototext.R;
-import com.artikov.photototext.notes.Note;
-import com.artikov.photototext.notes.db.NoteDataSource;
-import com.artikov.photototext.ocr.OcrClient;
-import com.artikov.photototext.ocr.OcrInput;
-import com.artikov.photototext.ocr.OcrProgress;
-import com.artikov.photototext.ocr.OcrResult;
+import com.artikov.photototext.data.Note;
+import com.artikov.photototext.db.NoteDataSource;
+import com.artikov.photototext.async.OcrClient;
+import com.artikov.photototext.data.OcrInput;
+import com.artikov.photototext.data.OcrProgress;
+import com.artikov.photototext.data.OcrResult;
 import com.artikov.photototext.utils.FileNameUtils;
 
 import java.io.File;

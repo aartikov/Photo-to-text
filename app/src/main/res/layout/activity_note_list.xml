@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".ui.NoteListActivity">
+    tools:context=".ui.activity.NoteListActivity">
 
     <FrameLayout
         android:id="@+id/activity_note_list_layout_list"

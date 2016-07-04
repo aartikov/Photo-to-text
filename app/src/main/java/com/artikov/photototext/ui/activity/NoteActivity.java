@@ -1,4 +1,4 @@
-package com.artikov.photototext.ui;
+package com.artikov.photototext.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,8 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 
 import com.artikov.photototext.R;
-import com.artikov.photototext.notes.Note;
-import com.artikov.photototext.notes.db.NoteDataSource;
+import com.artikov.photototext.data.Note;
+import com.artikov.photototext.db.NoteDataSource;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

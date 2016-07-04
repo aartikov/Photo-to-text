@@ -1,4 +1,4 @@
-package com.artikov.photototext.ocr;
+package com.artikov.photototext.data;
 
 /**
  * Date: 22/6/2016

@@ -1,6 +1,6 @@
-package com.artikov.photototext.ocr.exceptions;
+package com.artikov.photototext.network.exceptions;
 
-import com.artikov.photototext.ocr.network.OcrTask;
+import com.artikov.photototext.data.ocr_internal.OcrTask;
 
 /**
  * Date: 23/6/2016

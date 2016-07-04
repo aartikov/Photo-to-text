@@ -1,4 +1,4 @@
-package com.artikov.photototext.ocr;
+package com.artikov.photototext.data;
 
 import android.net.Uri;
 

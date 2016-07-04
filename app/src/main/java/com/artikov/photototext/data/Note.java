@@ -1,4 +1,4 @@
-package com.artikov.photototext.notes;
+package com.artikov.photototext.data;
 
 import android.database.sqlite.SQLiteDatabase;
 

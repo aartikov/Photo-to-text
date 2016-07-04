@@ -1,4 +1,4 @@
-package com.artikov.photototext.ocr.network;
+package com.artikov.photototext.data.ocr_internal;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;

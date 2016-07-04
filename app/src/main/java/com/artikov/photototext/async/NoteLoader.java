@@ -1,9 +1,10 @@
-package com.artikov.photototext.notes;
+package com.artikov.photototext.async;
 
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.artikov.photototext.notes.db.NoteDataSource;
+import com.artikov.photototext.data.Note;
+import com.artikov.photototext.db.NoteDataSource;
 
 import java.util.ArrayList;
 import java.util.List;

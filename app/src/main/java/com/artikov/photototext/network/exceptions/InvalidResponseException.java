@@ -1,4 +1,4 @@
-package com.artikov.photototext.ocr.exceptions;
+package com.artikov.photototext.network.exceptions;
 
 /**
  * Date: 23/6/2016
