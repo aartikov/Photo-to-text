@@ -50,7 +50,7 @@ public class ServiceGenerator {
     }
 
     public <T> T createService(Class<T> serviceClass) {
-        return (T) sRetrofit.create(serviceClass);
+        return sRetrofit.create(serviceClass);
     }
 
     private Interceptor createAuthorizationInterceptor() {
@@ -61,7 +61,9 @@ public class ServiceGenerator {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request original = chain.request();
-                if(!"Basic".equals(original.header("Authorization"))) return chain.proceed(original);
+                if (!"Basic".equals(original.header("Authorization"))) {
+                    return chain.proceed(original);
+                }
 
                 Request.Builder requestBuilder = original.newBuilder()
                         .header("Authorization", basicAuthorization);

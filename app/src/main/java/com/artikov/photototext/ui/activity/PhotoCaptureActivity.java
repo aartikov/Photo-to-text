@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,12 +13,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.artikov.photototext.R;
+import com.artikov.photototext.async.OcrAsyncTask;
 import com.artikov.photototext.data.Note;
-import com.artikov.photototext.db.NoteDataSource;
-import com.artikov.photototext.async.OcrClient;
 import com.artikov.photototext.data.OcrInput;
 import com.artikov.photototext.data.OcrProgress;
 import com.artikov.photototext.data.OcrResult;
+import com.artikov.photototext.db.NoteDataSource;
 import com.artikov.photototext.utils.FileNameUtils;
 
 import java.io.File;
@@ -29,7 +28,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient.Listener {
+public class PhotoCaptureActivity extends AppCompatActivity implements OcrAsyncTask.Listener {
     private static final int CHOOSE_IN_GALLERY_REQUEST_CODE = 1;
     private static final int TAKE_PHOTO_REQUEST_CODE = 2;
 
@@ -42,8 +41,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     @BindView(R.id.activity_photo_capture_text_view_progress)
     TextView mProgressTextView;
 
-    private OcrClient mOcrClient;
-    private Uri mPhotoUri;
+    private OcrAsyncTask mOcrAsyncTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +49,9 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         setContentView(R.layout.activity_photo_capture);
         ButterKnife.bind(this);
 
-        mOcrClient = (OcrClient) getLastCustomNonConfigurationInstance();
-        if (mOcrClient == null) {
-            mOcrClient = new OcrClient(getApplicationContext(), this);
-        } else {
-            mOcrClient.setListener(this);
+        mOcrAsyncTask = (OcrAsyncTask) getLastCustomNonConfigurationInstance();
+        if (mOcrAsyncTask != null) {
+            mOcrAsyncTask.setListener(this);
         }
     }
 
@@ -70,18 +66,36 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @OnClick(R.id.activity_photo_capture_button_take_photo)
     void takePhoto() {
-        File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getString(R.string.default_photo_name));
-        mPhotoUri = Uri.fromFile(photoFile);
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+        /*Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, getPhotoUri());
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(intent, TAKE_PHOTO_REQUEST_CODE);
-        }
+        }*/
+        File file = new File("/sdcard/Download/Picture_samples/Russian/[Untitled]001.jpg");
+        Uri uri = Uri.fromFile(file);
+        OcrInput input = new OcrInput(uri, "Russian");
+        startOcr(input);
+    }
+
+    private void startOcr(OcrInput input) {
+        cancelOcr();
+        mOcrAsyncTask = new OcrAsyncTask(getApplicationContext(), this);
+        mOcrAsyncTask.execute(input);
+        showProgress();
     }
 
     @OnClick(R.id.activity_photo_capture_button_cancel)
     void cancelOcr() {
-        mOcrClient.cancel();
+        if (mOcrAsyncTask != null) {
+            mOcrAsyncTask.cancel(true);
+            mOcrAsyncTask = null;
+        }
+        hideProgress();
+    }
+
+    private Uri getPhotoUri() {
+        File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getString(R.string.default_photo_name));
+        return Uri.fromFile(photoFile);
     }
 
     @Override
@@ -89,12 +103,12 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         if (requestCode == CHOOSE_IN_GALLERY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 OcrInput input = new OcrInput(data.getData(), "English,Russian");
-                mOcrClient.recognize(input);
+                startOcr(input);
             }
         } else if (requestCode == TAKE_PHOTO_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                OcrInput input = new OcrInput(mPhotoUri, "English,Russian");
-                mOcrClient.recognize(input);
+                OcrInput input = new OcrInput(getPhotoUri(), "English,Russian");
+                startOcr(input);
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -103,7 +117,7 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
-        return mOcrClient;
+        return mOcrAsyncTask;
     }
 
     @Override
@@ -123,21 +137,19 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         }
     }
 
-    @Override
     public void showProgress() {
         mButtonsLayout.setVisibility(View.GONE);
         mProgressLayout.setVisibility(View.VISIBLE);
+    }
+
+    public void hideProgress() {
+        mButtonsLayout.setVisibility(View.VISIBLE);
+        mProgressLayout.setVisibility(View.GONE);
         mProgressTextView.setText("");
     }
 
     @Override
-    public void hideProgress() {
-        mButtonsLayout.setVisibility(View.VISIBLE);
-        mProgressLayout.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void updateProgress(OcrProgress progress) {
+    public void onProgress(OcrProgress progress) {
         switch (progress) {
             case UPLOADING:
                 mProgressTextView.setText(R.string.uploading);
@@ -152,7 +164,9 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     }
 
     @Override
-    public void handleResult(OcrResult result) {
+    public void onRecognized(OcrResult result) {
+        mOcrAsyncTask = null;
+        hideProgress();
         Uri uri = result.getInput().getImageUri();
         String name = FileNameUtils.getName(this, uri);
         Note note = new Note(name, result.getText(), new Date());
@@ -161,7 +175,9 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     }
 
     @Override
-    public void handleException(Exception exception) {
+    public void onError(Exception exception) {
+        mOcrAsyncTask = null;
+        hideProgress();
         Toast.makeText(this, exception.getLocalizedMessage(), Toast.LENGTH_LONG).show();
     }
 

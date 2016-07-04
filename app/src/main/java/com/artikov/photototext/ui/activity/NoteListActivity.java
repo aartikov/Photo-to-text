@@ -14,17 +14,17 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.artikov.photototext.R;
+import com.artikov.photototext.async.NoteAsyncTask;
 import com.artikov.photototext.data.Note;
-import com.artikov.photototext.ui.adapters.NoteAdapter;
-import com.artikov.photototext.async.NoteLoader;
 import com.artikov.photototext.db.NoteDataSource;
+import com.artikov.photototext.ui.adapters.NoteAdapter;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NoteListActivity extends AppCompatActivity implements NoteLoader.Listener {
+public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask.Listener {
     private static final int SHOW_NOTE_REQUEST_CODE = 1;
     private static final java.lang.String SELECTED_POSITION_TAG = "SELECTED_POSITION";
 
@@ -44,7 +44,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     View mEmptyView;
 
     private NoteAdapter mAdapter;
-    private NoteLoader mNoteLoader;
+    private NoteAsyncTask mNoteAsyncTask;
     private int mSelectedPosition = -1;
 
     @Override
@@ -54,12 +54,13 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
         ButterKnife.bind(this);
         initRecyclerView();
 
-        mNoteLoader = (NoteLoader) getLastCustomNonConfigurationInstance();
-        if (mNoteLoader == null) {
-            mNoteLoader = new NoteLoader(getApplicationContext(), this);
-            mNoteLoader.load("");
+        mNoteAsyncTask = (NoteAsyncTask) getLastCustomNonConfigurationInstance();
+        if (mNoteAsyncTask != null) {
+            mNoteAsyncTask.setListener(this);
         } else {
-            mNoteLoader.setListener(this);
+            mNoteAsyncTask = new NoteAsyncTask(getApplicationContext(), this);
+            mNoteAsyncTask.execute();
+            showProgress();
         }
     }
 
@@ -92,7 +93,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
 
     @Override
     public Object onRetainCustomNonConfigurationInstance() {
-        return mNoteLoader;
+        return mNoteAsyncTask;
     }
 
     @Override
@@ -110,13 +111,18 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.note_list_menu, menu);
-        final MenuItem searchMenuItem = menu.findItem( R.id.note_list_menu_item_search);
+        final MenuItem searchMenuItem = menu.findItem(R.id.note_list_menu_item_search);
         final SearchView searchView = (SearchView) searchMenuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchMenuItem.collapseActionView();
-                mNoteLoader.load(query);
+                if (mNoteAsyncTask != null) {
+                    mNoteAsyncTask.cancel(true);
+                }
+                mNoteAsyncTask = new NoteAsyncTask(getApplicationContext(), NoteListActivity.this);
+                mNoteAsyncTask.execute(query);
+                showProgress();
                 return false;
             }
 
@@ -141,23 +147,23 @@ public class NoteListActivity extends AppCompatActivity implements NoteLoader.Li
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        mNoteLoader.cancel();
+        if (mNoteAsyncTask != null) mNoteAsyncTask.cancel(true);
     }
 
-    @Override
     public void showProgress() {
         mListLayout.setVisibility(View.GONE);
         mProgressLayout.setVisibility(View.VISIBLE);
     }
 
-    @Override
     public void hideProgress() {
         mListLayout.setVisibility(View.VISIBLE);
         mProgressLayout.setVisibility(View.GONE);
     }
 
     @Override
-    public void setResult(List<Note> notes) {
+    public void onLoaded(List<Note> notes) {
+        mNoteAsyncTask = null;
+        hideProgress();
         mAdapter.setNotes(notes);
         checkEmptyState();
     }
