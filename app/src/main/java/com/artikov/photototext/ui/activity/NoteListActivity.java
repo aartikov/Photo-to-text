@@ -2,7 +2,6 @@ package com.artikov.photototext.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -13,20 +12,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.artikov.photototext.R;
-import com.artikov.photototext.async.NoteAsyncTask;
 import com.artikov.photototext.data.Note;
-import com.artikov.photototext.db.NoteDataSource;
+import com.artikov.photototext.presenters.NoteListPresenter;
 import com.artikov.photototext.ui.adapters.NoteAdapter;
+import com.artikov.photototext.views.NoteListView;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask.Listener {
+public class NoteListActivity extends MvpAppCompatActivity implements NoteListView {
     private static final int SHOW_NOTE_REQUEST_CODE = 1;
-    private static final java.lang.String SELECTED_POSITION_TAG = "SELECTED_POSITION";
 
     @BindView(R.id.activity_note_list_recycler_view_notes)
     RecyclerView mNotesRecyclerView;
@@ -43,9 +42,10 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
     @BindView(R.id.activity_note_list_text_view_empty_view)
     View mEmptyView;
 
+    @InjectPresenter
+    NoteListPresenter mPresenter;
+
     private NoteAdapter mAdapter;
-    private NoteAsyncTask mNoteAsyncTask;
-    private int mSelectedPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,22 +53,12 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
         setContentView(R.layout.activity_note_list);
         ButterKnife.bind(this);
         initRecyclerView();
-
-        mNoteAsyncTask = (NoteAsyncTask) getLastCustomNonConfigurationInstance();
-        if (mNoteAsyncTask != null) {
-            mNoteAsyncTask.setListener(this);
-        } else {
-            mNoteAsyncTask = new NoteAsyncTask(getApplicationContext(), this);
-            mNoteAsyncTask.execute();
-            showProgress();
-        }
     }
 
     private void initRecyclerView() {
         NoteAdapter.OnItemClickListener onItemClickListener = new NoteAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Note note, int position) {
-                mSelectedPosition = position;
                 showNote(note);
             }
         };
@@ -81,7 +71,8 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                deleteNote(viewHolder.getAdapterPosition());
+                Note note = mAdapter.getItem(viewHolder.getAdapterPosition());
+                mPresenter.deleteNote(note);
             }
         });
 
@@ -89,23 +80,6 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
         mAdapter = new NoteAdapter(this, onItemClickListener);
         mNotesRecyclerView.setAdapter(mAdapter);
         swipeToDismissHelper.attachToRecyclerView(mNotesRecyclerView);
-    }
-
-    @Override
-    public Object onRetainCustomNonConfigurationInstance() {
-        return mNoteAsyncTask;
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(SELECTED_POSITION_TAG, mSelectedPosition);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        mSelectedPosition = savedInstanceState.getInt(SELECTED_POSITION_TAG, -1);
     }
 
     @Override
@@ -117,12 +91,7 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchMenuItem.collapseActionView();
-                if (mNoteAsyncTask != null) {
-                    mNoteAsyncTask.cancel(true);
-                }
-                mNoteAsyncTask = new NoteAsyncTask(getApplicationContext(), NoteListActivity.this);
-                mNoteAsyncTask.execute(query);
-                showProgress();
+                mPresenter.search(query);
                 return false;
             }
 
@@ -136,9 +105,8 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SHOW_NOTE_REQUEST_CODE && resultCode == RESULT_OK && data != null && mSelectedPosition != -1) {
-            Note note = (Note) data.getSerializableExtra(NoteActivity.NOTE_EXTRA);
-            mAdapter.setItem(mSelectedPosition, note);
+        if (requestCode == SHOW_NOTE_REQUEST_CODE && resultCode == RESULT_OK) {
+            mPresenter.loadAll();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -147,41 +115,24 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (mNoteAsyncTask != null) mNoteAsyncTask.cancel(true);
+        mPresenter.cancel();
     }
 
+    @Override
     public void showProgress() {
         mListLayout.setVisibility(View.GONE);
         mProgressLayout.setVisibility(View.VISIBLE);
     }
 
+    @Override
     public void hideProgress() {
         mListLayout.setVisibility(View.VISIBLE);
         mProgressLayout.setVisibility(View.GONE);
     }
 
     @Override
-    public void onLoaded(List<Note> notes) {
-        mNoteAsyncTask = null;
-        hideProgress();
+    public void setNotes(List<Note> notes) {
         mAdapter.setNotes(notes);
-        checkEmptyState();
-    }
-
-    private void showNote(Note note) {
-        Intent intent = new Intent(this, NoteActivity.class);
-        intent.putExtra(NoteActivity.NOTE_EXTRA, note);
-        startActivityForResult(intent, SHOW_NOTE_REQUEST_CODE);
-    }
-
-    private void deleteNote(int position) {
-        NoteDataSource dataSource = new NoteDataSource(NoteListActivity.this);
-        dataSource.delete(mAdapter.getItem(position));
-        mAdapter.removeItem(position);
-        checkEmptyState();
-    }
-
-    private void checkEmptyState() {
         if (mAdapter.getItemCount() == 0) {
             mNotesRecyclerView.setVisibility(View.GONE);
             mEmptyView.setVisibility(View.VISIBLE);
@@ -189,5 +140,11 @@ public class NoteListActivity extends AppCompatActivity implements NoteAsyncTask
             mNotesRecyclerView.setVisibility(View.VISIBLE);
             mEmptyView.setVisibility(View.GONE);
         }
+    }
+
+    private void showNote(Note note) {
+        Intent intent = new Intent(this, NoteActivity.class);
+        intent.putExtra(NoteActivity.NOTE_EXTRA, note);
+        startActivityForResult(intent, SHOW_NOTE_REQUEST_CODE);
     }
 }

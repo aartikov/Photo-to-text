@@ -1,6 +1,5 @@
 package com.artikov.photototext.ui.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
@@ -37,7 +36,7 @@ public class NoteActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (noteEdited()) {
             updateNote();
-            setNoteToResult();
+            setResult(RESULT_OK, null);
         }
         super.onBackPressed();
     }
@@ -52,12 +51,6 @@ public class NoteActivity extends AppCompatActivity {
         if (!mNote.getName().equals(mNameEditText.getText().toString())) return true;
         if (!mNote.getText().equals(mTextEditText.getText().toString())) return true;
         return false;
-    }
-
-    private void setNoteToResult() {
-        Intent resultIntent = new Intent();
-        resultIntent.putExtra(NOTE_EXTRA, mNote);
-        setResult(RESULT_OK, resultIntent);
     }
 
     private void updateNote() {
