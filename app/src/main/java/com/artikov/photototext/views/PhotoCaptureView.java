@@ -1,6 +1,9 @@
 package com.artikov.photototext.views;
 
 import com.arellomobile.mvp.MvpView;
+import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy;
+import com.arellomobile.mvp.viewstate.strategy.SkipStrategy;
+import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
 import com.artikov.photototext.data.Note;
 import com.artikov.photototext.data.OcrProgress;
 
@@ -10,6 +13,8 @@ import com.artikov.photototext.data.OcrProgress;
  *
  * @author Artur Artikov
  */
+
+@StateStrategyType(AddToEndSingleStrategy.class)
 public interface PhotoCaptureView extends MvpView {
     void showProgress();
 
@@ -17,7 +22,9 @@ public interface PhotoCaptureView extends MvpView {
 
     void setProgress(OcrProgress progress);
 
+    @StateStrategyType(SkipStrategy.class)
     void showNote(Note note);
 
+    @StateStrategyType(SkipStrategy.class)
     void showError(String error);
 }
