@@ -17,7 +17,7 @@ import java.sql.SQLException;
  * @author Artur Artikov
  */
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
-    private static final String NAME = "NOTE_DATABASE";
+    private static final String NAME = "PhotoToText.db";
     private static final int VERSION = 1;
     private static DatabaseHelper sInstance;
 
