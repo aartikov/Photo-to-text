@@ -27,10 +27,6 @@ public class NoteAsyncTask extends AsyncTask<String, Void, List<Note>> {
         mListener = listener;
     }
 
-    public void setListener(Listener listener) {
-        mListener = listener;
-    }
-
     @Override
     protected List<Note> doInBackground(String... params) {
         NoteDataSource dataSource = new NoteDataSource(mContext);

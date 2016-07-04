@@ -36,10 +36,6 @@ public class OcrAsyncTask extends AsyncTask<OcrInput, OcrProgress, OcrResult> {
         mListener = listener;
     }
 
-    public void setListener(Listener listener) {
-        mListener = listener;
-    }
-
     @Override
     protected OcrResult doInBackground(OcrInput... inputs) {
         OcrInput input = inputs[0];
