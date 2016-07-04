@@ -14,10 +14,4 @@
     <string name="loading">Loading...</string>
     <string name="no_notes">No notes</string>
     <string name="search">Search</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="one">One</string>
-    <string name="two">Two</string>
-    <string name="three">Three</string>
 </resources>

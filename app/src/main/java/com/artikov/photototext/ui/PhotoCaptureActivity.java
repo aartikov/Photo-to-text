@@ -5,12 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,7 +29,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient.Listener, NavigationView.OnNavigationItemSelectedListener {
+public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient.Listener {
     private static final int CHOOSE_IN_GALLERY_REQUEST_CODE = 1;
     private static final int TAKE_PHOTO_REQUEST_CODE = 2;
 
@@ -48,13 +42,6 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
     @BindView(R.id.activity_photo_capture_text_view_progress)
     TextView mProgressTextView;
 
-    @BindView(R.id.activity_photo_capture_drawer_layout)
-    DrawerLayout mDrawerLayout;
-
-    @BindView(R.id.activity_photo_capture_navigation_view)
-    NavigationView mNavigationView;
-
-    private ActionBarDrawerToggle mDrawerToggle;
     private OcrClient mOcrClient;
     private Uri mPhotoUri;
 
@@ -63,16 +50,6 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_capture);
         ButterKnife.bind(this);
-
-        ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-            mDrawerLayout.addDrawerListener(mDrawerToggle);
-            mDrawerToggle.syncState();
-        }
-
-        mNavigationView.setNavigationItemSelectedListener(this);
 
         mOcrClient = (OcrClient) getLastCustomNonConfigurationInstance();
         if (mOcrClient == null) {
@@ -137,42 +114,12 @@ public class PhotoCaptureActivity extends AppCompatActivity implements OcrClient
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
         switch (item.getItemId()) {
             case R.id.photo_capture_menu_item_notes:
                 showNoteList();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.navigation_menu_one:
-                Snackbar.make(mDrawerLayout, R.string.one, Snackbar.LENGTH_SHORT).show();
-                break;
-            case R.id.navigation_menu_two:
-                Snackbar.make(mDrawerLayout, R.string.two, Snackbar.LENGTH_SHORT).show();
-                break;
-            case R.id.navigation_menu_three:
-                Snackbar.make(mDrawerLayout, R.string.three, Snackbar.LENGTH_SHORT).show();
-                break;
-        }
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
         }
     }
 
