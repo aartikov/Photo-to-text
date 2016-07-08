@@ -22,18 +22,12 @@ public class NoteDataSource {
         mDatabaseHelper = DatabaseHelper.getInstance(context);
     }
 
-    public List<Note> getAll() {
+    public List<Note> queryNotes(String query) {
         try {
-            return mDatabaseHelper.getNoteDao().queryForAll();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
-    public List<Note> search(String searchString) {
-        String searchTemplate = "%" + searchString + "%";
-        try {
+            if (query.isEmpty()) {
+                return mDatabaseHelper.getNoteDao().queryForAll();
+            }
+            String searchTemplate = "%" + query + "%";
             return mDatabaseHelper.getNoteDao().queryBuilder()
                     .where().like(Note.Database.Column.NAME, searchTemplate)
                     .or().like(Note.Database.Column.TEXT, searchTemplate).query();
@@ -51,7 +45,7 @@ public class NoteDataSource {
         }
     }
 
-    public void update(Note note){
+    public void update(Note note) {
         try {
             mDatabaseHelper.getNoteDao().update(note);
         } catch (SQLException e) {
@@ -59,7 +53,7 @@ public class NoteDataSource {
         }
     }
 
-    public void delete(Note note){
+    public void delete(Note note) {
         try {
             mDatabaseHelper.getNoteDao().delete(note);
         } catch (SQLException e) {

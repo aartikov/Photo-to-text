@@ -5,12 +5,17 @@ import android.content.Context;
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.artikov.photototext.PhotoToTextApplication;
-import com.artikov.photototext.async.NoteAsyncTask;
 import com.artikov.photototext.data.Note;
 import com.artikov.photototext.db.NoteDataSource;
 import com.artikov.photototext.views.NoteListView;
 
 import java.util.List;
+
+import rx.Observable;
+import rx.Observable.OnSubscribe;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Date: 4/7/2016
@@ -20,32 +25,43 @@ import java.util.List;
  */
 
 @InjectViewState
-public class NoteListPresenter extends MvpPresenter<NoteListView> implements NoteAsyncTask.Listener {
+public class NoteListPresenter extends MvpPresenter<NoteListView> {
     private Context mContext;
-    private NoteAsyncTask mNoteAsyncTask;
+    private Subscription mNoteQuerySubscription;
 
     public NoteListPresenter() {
         mContext = PhotoToTextApplication.getInstance();
     }
 
-    public void loadAll() {
-        cancel();
-        mNoteAsyncTask = new NoteAsyncTask(mContext, this);
-        mNoteAsyncTask.execute();
-        getViewState().showProgress();
+    @Override
+    protected void onFirstViewAttach() {
+        super.onFirstViewAttach();
+        queryAllNotes();
     }
 
-    public void search(String searchString) {
-        cancel();
-        mNoteAsyncTask = new NoteAsyncTask(mContext, this);
-        mNoteAsyncTask.execute(searchString);
-        getViewState().showProgress();
+    public void queryAllNotes() {
+        queryNotes("");
     }
 
-    public void cancel() {
-        if (mNoteAsyncTask != null) {
-            mNoteAsyncTask.cancel(true);
-            mNoteAsyncTask = null;
+    public void queryNotes(String query) {
+        cancelQuery();
+        getViewState().showProgress();
+        mNoteQuerySubscription = Observable.create((OnSubscribe<List<Note>>) subscriber -> {
+            NoteDataSource dataSource = new NoteDataSource(mContext);
+            subscriber.onNext(dataSource.queryNotes(query));
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(notes -> {
+                    getViewState().hideProgress();
+                    getViewState().setNotes(notes);
+                });
+    }
+
+    public void cancelQuery() {
+        if (mNoteQuerySubscription != null) {
+            mNoteQuerySubscription.unsubscribe();
+            mNoteQuerySubscription = null;
             getViewState().hideProgress();
         }
     }
@@ -53,19 +69,6 @@ public class NoteListPresenter extends MvpPresenter<NoteListView> implements Not
     public void deleteNote(Note note) {
         NoteDataSource dataSource = new NoteDataSource(mContext);
         dataSource.delete(note);
-        loadAll();
-    }
-
-    @Override
-    protected void onFirstViewAttach() {
-        super.onFirstViewAttach();
-        loadAll();
-    }
-
-    @Override
-    public void onLoaded(List<Note> notes) {
-        mNoteAsyncTask = null;
-        getViewState().hideProgress();
-        getViewState().setNotes(notes);
+        queryAllNotes();
     }
 }

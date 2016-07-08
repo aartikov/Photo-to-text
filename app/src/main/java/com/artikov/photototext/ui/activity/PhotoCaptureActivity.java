@@ -57,26 +57,9 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
         setContentView(R.layout.activity_photo_capture);
         ButterKnife.bind(this);
 
-        mChooseInGalleryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                chooseInGallery();
-            }
-        });
-
-        mTakePhotoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                takePhoto();
-            }
-        });
-
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPresenter.cancel();
-            }
-        });
+        mChooseInGalleryButton.setOnClickListener(v -> chooseInGallery());
+        mTakePhotoButton.setOnClickListener(v -> takePhoto());
+        mCancelButton.setOnClickListener(v -> mPresenter.cancel());
     }
 
     @Override
