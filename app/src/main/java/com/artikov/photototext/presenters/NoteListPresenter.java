@@ -12,7 +12,7 @@ import com.artikov.photototext.views.NoteListView;
 import java.util.List;
 
 import rx.Observable;
-import rx.Observable.OnSubscribe;
+import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -26,11 +26,12 @@ import rx.schedulers.Schedulers;
 
 @InjectViewState
 public class NoteListPresenter extends MvpPresenter<NoteListView> {
-    private Context mContext;
+    private NoteDataSource mNoteDataSource;
     private Subscription mNoteQuerySubscription;
 
     public NoteListPresenter() {
-        mContext = PhotoToTextApplication.getInstance();
+        Context context = PhotoToTextApplication.getInstance();
+        mNoteDataSource = new NoteDataSource(context);
     }
 
     @Override
@@ -46,29 +47,36 @@ public class NoteListPresenter extends MvpPresenter<NoteListView> {
     public void queryNotes(String query) {
         cancelQuery();
         getViewState().showProgress();
-        mNoteQuerySubscription = Observable.create((OnSubscribe<List<Note>>) subscriber -> {
-            NoteDataSource dataSource = new NoteDataSource(mContext);
-            subscriber.onNext(dataSource.queryNotes(query));
-        })
-                .subscribeOn(Schedulers.io())
+        mNoteQuerySubscription = Observable.fromCallable(() -> mNoteDataSource.queryNotes(query))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(notes -> {
-                    getViewState().hideProgress();
-                    getViewState().setNotes(notes);
+                .subscribeOn(Schedulers.io())
+                .subscribe(new Subscriber<List<Note>>() {
+                    @Override
+                    public void onCompleted() {
+                        getViewState().hideProgress();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
+                    }
+
+                    @Override
+                    public void onNext(List<Note> notes) {
+                        getViewState().setNotes(notes);
+                    }
                 });
     }
 
     public void cancelQuery() {
-        if (mNoteQuerySubscription != null) {
+        if (mNoteQuerySubscription != null && !mNoteQuerySubscription.isUnsubscribed()) {
             mNoteQuerySubscription.unsubscribe();
-            mNoteQuerySubscription = null;
             getViewState().hideProgress();
         }
     }
 
     public void deleteNote(Note note) {
-        NoteDataSource dataSource = new NoteDataSource(mContext);
-        dataSource.delete(note);
+        mNoteDataSource.delete(note);
         queryAllNotes();
     }
 }

@@ -8,17 +8,15 @@ import com.artikov.photototext.data.OcrProgress;
 import com.artikov.photototext.data.OcrResult;
 import com.artikov.photototext.data.ocr_internal.OcrResponse;
 import com.artikov.photototext.data.ocr_internal.OcrTask;
-import com.artikov.photototext.network.exceptions.InvalidResponseException;
 import com.artikov.photototext.network.exceptions.InvalidTaskStatusException;
+import com.artikov.photototext.utils.FileUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
-import retrofit2.Response;
+import rx.Observable;
+import rx.subjects.PublishSubject;
 
 /**
  * Date: 4/7/2016
@@ -29,87 +27,54 @@ import retrofit2.Response;
 public class OcrClient {
     private static final int TASK_STATUS_CHECKING_DELAY = 2000;
     private Context mContext;
-    private ProgressCallback mProgressCallback;
     private OcrApi mOcrService;
+    private PublishSubject<OcrProgress> mProgressSubject;
 
-    public interface ProgressCallback {
-        void onProgress(OcrProgress progress);
-    }
-
-    public OcrClient(Context context, ProgressCallback progressCallback) {
+    public OcrClient(Context context) {
         mContext = context;
-        mProgressCallback = progressCallback;
         mOcrService = ServiceGenerator.getInstance().createService(OcrApi.class);
+        mProgressSubject = PublishSubject.create();
     }
 
-    public OcrResult recognize(OcrInput input) throws IOException, InterruptedException, InvalidResponseException, InvalidTaskStatusException {
-        mProgressCallback.onProgress(OcrProgress.UPLOADING);
-        OcrTask task = processImage(input);
-
-        mProgressCallback.onProgress(OcrProgress.RECOGNITION);
-        while (!task.isCompleted() && !task.isInvalid()) {
-            TimeUnit.MILLISECONDS.sleep(TASK_STATUS_CHECKING_DELAY);
-            task = getTaskStatus(task);
-        }
-        if (task.isInvalid()) {
-            throw new InvalidTaskStatusException(task.getStatus());
-        }
-
-        mProgressCallback.onProgress(OcrProgress.DOWNLOADING);
-        return getResult(input, task);
+    public Observable<OcrResult> recognize(OcrInput input) {
+        mProgressSubject.onNext(OcrProgress.UPLOADING);
+        return processImage(input)
+                .doOnNext(ignored -> mProgressSubject.onNext(OcrProgress.RECOGNITION))
+                .flatMap(task -> getResultUrl(task.getId()))
+                .doOnNext(ignored -> mProgressSubject.onNext(OcrProgress.DOWNLOADING))
+                .flatMap(url -> getResult(input, url));
     }
 
-    private OcrTask processImage(OcrInput input) throws IOException, InvalidResponseException {
-        String language = input.getLanguage();
-        byte[] imageData = readImage(input.getImageUri());
-        MediaType mediaType = MediaType.parse("application/octet-stream");
-        RequestBody image = RequestBody.create(mediaType, imageData);
-
-        Response<OcrResponse> response = mOcrService.processImage(image, language).execute();
-        if (!response.isSuccessful()) {
-            throw new InvalidResponseException(response.message());
-        }
-        return response.body().getTask();
+    public Observable<OcrProgress> getProgressObservable() {
+        return mProgressSubject;
     }
 
-    private OcrTask getTaskStatus(OcrTask task) throws IOException, InvalidResponseException {
-        Response<OcrResponse> response = mOcrService.getTaskStatus(task.getId()).execute();
-        if (!response.isSuccessful()) {
-            throw new InvalidResponseException(response.message());
-        }
-        return response.body().getTask();
+    private Observable<OcrTask> processImage(OcrInput input) {
+        return readImage(input.getImageUri())
+                .flatMap(image -> mOcrService.processImage(image, input.getLanguage()))
+                .map(OcrResponse::getTask);
     }
 
-    private OcrResult getResult(OcrInput input, OcrTask task) throws IOException, InvalidResponseException {
-        Response<ResponseBody> response = mOcrService.getResult(task.getResultUrl()).execute();
-        if (!response.isSuccessful()) {
-            throw new InvalidResponseException("Failed to download result");
-        }
-        String text = response.body().string();
-        return new OcrResult(input, text);
+    private Observable<String> getResultUrl(String taskId) {
+        return mOcrService.getTaskStatus(taskId)
+                .delay(TASK_STATUS_CHECKING_DELAY, TimeUnit.MILLISECONDS)
+                .repeat()
+                .map(OcrResponse::getTask)
+                .flatMap(task -> task.isInvalid() ? Observable.error(new InvalidTaskStatusException(task.getStatus())) : Observable.just(task))
+                .takeFirst(OcrTask::isCompleted)
+                .map(OcrTask::getResultUrl);
     }
 
-    private byte[] readImage(Uri imageUri) throws IOException {
-        InputStream stream = mContext.getContentResolver().openInputStream(imageUri);
-        if (stream == null) {
-            throw new IOException("Could not read image " + imageUri);
-        }
+    private Observable<OcrResult> getResult(OcrInput input, String resultUrl) {
+        return mOcrService.getResult(resultUrl)
+                .map(text -> new OcrResult(input, text));
+    }
 
-        byte[] data = new byte[stream.available()];
-        try {
-            int offset = 0;
-            while (true) {
-                if (offset >= data.length) break;
-                int count = stream.read(data, offset, data.length - offset);
-                if (count < 0) break;
-                offset += count;
-            }
-            if (offset < data.length) {
-                throw new IOException("Could not read image " + imageUri);
-            }
-        } finally {
-            stream.close();
-        }
-        return data;
+    private Observable<RequestBody> readImage(Uri imageUri) {
+        return Observable.fromCallable(() -> {
+            byte[] imageData = FileUtils.readFile(mContext, imageUri);
+            MediaType mediaType = MediaType.parse("application/octet-stream");
+            return RequestBody.create(mediaType, imageData);
+        });
     }
 }

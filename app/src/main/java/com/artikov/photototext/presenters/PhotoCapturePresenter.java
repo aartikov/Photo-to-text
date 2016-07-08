@@ -6,16 +6,21 @@ import android.net.Uri;
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.artikov.photototext.PhotoToTextApplication;
-import com.artikov.photototext.async.OcrAsyncTask;
 import com.artikov.photototext.data.Note;
 import com.artikov.photototext.data.OcrInput;
-import com.artikov.photototext.data.OcrProgress;
 import com.artikov.photototext.data.OcrResult;
 import com.artikov.photototext.db.NoteDataSource;
-import com.artikov.photototext.utils.FileNameUtils;
+import com.artikov.photototext.network.OcrClient;
+import com.artikov.photototext.utils.FileUtils;
 import com.artikov.photototext.views.PhotoCaptureView;
 
 import java.util.Date;
+
+import retrofit2.adapter.rxjava.HttpException;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Date: 4/7/2016
@@ -25,58 +30,66 @@ import java.util.Date;
  */
 
 @InjectViewState
-public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> implements OcrAsyncTask.Listener {
+public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
     private Context mContext;
-    private OcrAsyncTask mOcrAsyncTask;
+    private NoteDataSource mNoteDataSource;
+    private OcrClient mOcrClient;
+    private Subscription mOcrSubscription;
 
     public PhotoCapturePresenter() {
         mContext = PhotoToTextApplication.getInstance();
+        mNoteDataSource = new NoteDataSource(mContext);
+        mOcrClient = new OcrClient(mContext);
+        mOcrClient.getProgressObservable()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(progress -> getViewState().setProgress(progress));
     }
 
     public void recognize(OcrInput input) {
-        cancel();
-        mOcrAsyncTask = new OcrAsyncTask(mContext, this);
-        mOcrAsyncTask.execute(input);
+        cancelRecognition();
         getViewState().showProgress();
+        mOcrSubscription = mOcrClient.recognize(input)
+                .map(this::convertOcrResultToNote)
+                .doOnNext(note -> mNoteDataSource.create(note))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(new Subscriber<Note>() {
+                    @Override
+                    public void onCompleted() {
+                        getViewState().hideProgress();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        getViewState().hideProgress();
+                        getViewState().showError(getErrorString(e));
+                    }
+
+                    @Override
+                    public void onNext(Note note) {
+                        getViewState().showNote(note);
+                    }
+                });
     }
 
-    public void cancel() {
-        if (mOcrAsyncTask != null) {
-            mOcrAsyncTask.cancel(true);
-            mOcrAsyncTask = null;
+    public void cancelRecognition() {
+        if (mOcrSubscription != null && !mOcrSubscription.isUnsubscribed()) {
+            mOcrSubscription.unsubscribe();
             getViewState().hideProgress();
         }
     }
 
-    @Override
-    public void onProgress(OcrProgress progress) {
-        getViewState().setProgress(progress);
-    }
-
-    @Override
-    public void onRecognized(OcrResult result) {
-        mOcrAsyncTask = null;
-        getViewState().hideProgress();
-        Note note = convertOcrResultToNote(result);
-        addNoteToDatabase(note);
-        getViewState().showNote(note);
-    }
-
-    @Override
-    public void onError(Exception exception) {
-        mOcrAsyncTask = null;
-        getViewState().hideProgress();
-        getViewState().showError(exception.getLocalizedMessage());
-    }
-
     private Note convertOcrResultToNote(OcrResult result) {
         Uri uri = result.getInput().getImageUri();
-        String name = FileNameUtils.getName(mContext, uri);
+        String name = FileUtils.getNameByUri(mContext, uri);
         return new Note(name, result.getText(), new Date());
     }
 
-    private void addNoteToDatabase(Note note) {
-        NoteDataSource dataSource = new NoteDataSource(mContext);
-        dataSource.create(note);
+    private String getErrorString(Throwable e) {
+        if (e instanceof HttpException) {
+            return ((HttpException) e).message();
+        } else {
+            return e.getLocalizedMessage();
+        }
     }
 }

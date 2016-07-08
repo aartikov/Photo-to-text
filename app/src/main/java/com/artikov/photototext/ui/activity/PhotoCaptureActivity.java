@@ -59,7 +59,7 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
 
         mChooseInGalleryButton.setOnClickListener(v -> chooseInGallery());
         mTakePhotoButton.setOnClickListener(v -> takePhoto());
-        mCancelButton.setOnClickListener(v -> mPresenter.cancel());
+        mCancelButton.setOnClickListener(v -> mPresenter.cancelRecognition());
     }
 
     @Override
@@ -72,7 +72,7 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.photo_capture_menu_item_notes:
-                mPresenter.cancel();
+                mPresenter.cancelRecognition();
                 Intent intent = new Intent(this, NoteListActivity.class);
                 startActivity(intent);
                 return true;

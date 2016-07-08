@@ -10,6 +10,8 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 /**
@@ -38,7 +40,9 @@ public class ServiceGenerator {
 
         mRetrofit = new Retrofit.Builder()
                 .client(client)
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(SimpleXmlConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .baseUrl(BASE_URL).build();
     }
 
