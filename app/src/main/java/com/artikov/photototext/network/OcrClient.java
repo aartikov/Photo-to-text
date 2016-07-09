@@ -38,7 +38,8 @@ public class OcrClient {
 
     public Observable<OcrResult> recognize(OcrInput input) {
         mProgressSubject.onNext(OcrProgress.UPLOADING);
-        return processImage(input)
+        return readImage(input.getImageUri())
+                .flatMap(image -> processImage(image, input.getLanguage()))
                 .doOnNext(ignored -> mProgressSubject.onNext(OcrProgress.RECOGNITION))
                 .flatMap(task -> getResultUrl(task.getId()))
                 .doOnNext(ignored -> mProgressSubject.onNext(OcrProgress.DOWNLOADING))
@@ -49,17 +50,22 @@ public class OcrClient {
         return mProgressSubject;
     }
 
-    private Observable<OcrTask> processImage(OcrInput input) {
-        return readImage(input.getImageUri())
-                .flatMap(image -> mOcrService.processImage(image, input.getLanguage()))
-                .map(OcrResponse::getTask);
+    private Observable<RequestBody> readImage(Uri imageUri) {
+        return Observable.fromCallable(() -> {
+            byte[] imageData = FileUtils.readFile(mContext, imageUri);
+            MediaType mediaType = MediaType.parse("application/octet-stream");
+            return RequestBody.create(mediaType, imageData);
+        });
+    }
+
+    private Observable<OcrTask> processImage(RequestBody image, String language) {
+        return mOcrService.processImage(image, language).map(OcrResponse::getTask);
     }
 
     private Observable<String> getResultUrl(String taskId) {
-        return mOcrService.getTaskStatus(taskId)
+        return mOcrService.getTaskStatus(taskId).map(OcrResponse::getTask)
                 .delay(TASK_STATUS_CHECKING_DELAY, TimeUnit.MILLISECONDS)
                 .repeat()
-                .map(OcrResponse::getTask)
                 .flatMap(task -> task.isInvalid() ? Observable.error(new InvalidTaskStatusException(task.getStatus())) : Observable.just(task))
                 .takeFirst(OcrTask::isCompleted)
                 .map(OcrTask::getResultUrl);
@@ -68,13 +74,5 @@ public class OcrClient {
     private Observable<OcrResult> getResult(OcrInput input, String resultUrl) {
         return mOcrService.getResult(resultUrl)
                 .map(text -> new OcrResult(input, text));
-    }
-
-    private Observable<RequestBody> readImage(Uri imageUri) {
-        return Observable.fromCallable(() -> {
-            byte[] imageData = FileUtils.readFile(mContext, imageUri);
-            MediaType mediaType = MediaType.parse("application/octet-stream");
-            return RequestBody.create(mediaType, imageData);
-        });
     }
 }
