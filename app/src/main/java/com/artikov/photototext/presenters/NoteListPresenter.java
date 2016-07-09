@@ -40,11 +40,23 @@ public class NoteListPresenter extends MvpPresenter<NoteListView> {
         queryAllNotes();
     }
 
-    public void queryAllNotes() {
-        queryNotes("");
+    public void userEnterQuery(String query) {
+        queryNotes(query);
     }
 
-    public void queryNotes(String query) {
+    public void userSwipeOutNote(Note note) {
+        deleteNote(note);
+    }
+
+    public void userLeaveScreen() {
+        cancelQuery();
+    }
+
+    public void userReturnToScreen() {
+        queryAllNotes();
+    }
+
+    private void queryNotes(String query) {
         cancelQuery();
         getViewState().showProgress();
         mNoteQuerySubscription = Observable.fromCallable(() -> mNoteDataSource.queryNotes(query))
@@ -68,14 +80,18 @@ public class NoteListPresenter extends MvpPresenter<NoteListView> {
                 });
     }
 
-    public void cancelQuery() {
+    private void queryAllNotes() {
+        queryNotes("");
+    }
+
+    private void cancelQuery() {
         if (mNoteQuerySubscription != null && !mNoteQuerySubscription.isUnsubscribed()) {
             mNoteQuerySubscription.unsubscribe();
             getViewState().hideProgress();
         }
     }
 
-    public void deleteNote(Note note) {
+    private void deleteNote(Note note) {
         mNoteDataSource.delete(note);
         queryAllNotes();
     }

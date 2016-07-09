@@ -45,7 +45,19 @@ public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
                 .subscribe(progress -> getViewState().setProgress(progress));
     }
 
-    public void recognize(OcrInput input) {
+    public void userChooseImage(Uri imageUri) {
+        recognize(new OcrInput(imageUri, "English,Russian"));
+    }
+
+    public void userClickCancel() {
+        cancelRecognition();
+    }
+
+    public void userLeaveScreen() {
+        cancelRecognition();
+    }
+
+    private void recognize(OcrInput input) {
         cancelRecognition();
         getViewState().showProgress();
         mOcrSubscription = mOcrClient.recognize(input)
@@ -72,7 +84,7 @@ public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
                 });
     }
 
-    public void cancelRecognition() {
+    private void cancelRecognition() {
         if (mOcrSubscription != null && !mOcrSubscription.isUnsubscribed()) {
             mOcrSubscription.unsubscribe();
             getViewState().hideProgress();

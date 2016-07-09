@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.artikov.photototext.R;
 import com.artikov.photototext.data.Note;
-import com.artikov.photototext.data.OcrInput;
 import com.artikov.photototext.data.OcrProgress;
 import com.artikov.photototext.presenters.PhotoCapturePresenter;
 import com.artikov.photototext.views.PhotoCaptureView;
@@ -59,7 +58,7 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
 
         mChooseInGalleryButton.setOnClickListener(v -> chooseInGallery());
         mTakePhotoButton.setOnClickListener(v -> takePhoto());
-        mCancelButton.setOnClickListener(v -> mPresenter.cancelRecognition());
+        mCancelButton.setOnClickListener(v -> mPresenter.userClickCancel());
     }
 
     @Override
@@ -72,12 +71,28 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.photo_capture_menu_item_notes:
-                mPresenter.cancelRecognition();
                 Intent intent = new Intent(this, NoteListActivity.class);
                 startActivity(intent);
+                mPresenter.userLeaveScreen();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CHOOSE_IN_GALLERY_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                mPresenter.userChooseImage(data.getData());
+
+            }
+        } else if (requestCode == TAKE_PHOTO_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                mPresenter.userChooseImage(getPhotoUri());
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -134,23 +149,6 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
         intent.putExtra(MediaStore.EXTRA_OUTPUT, getPhotoUri());
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(intent, TAKE_PHOTO_REQUEST_CODE);
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CHOOSE_IN_GALLERY_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                OcrInput input = new OcrInput(data.getData(), "English,Russian");
-                mPresenter.recognize(input);
-            }
-        } else if (requestCode == TAKE_PHOTO_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                OcrInput input = new OcrInput(getPhotoUri(), "English,Russian");
-                mPresenter.recognize(input);
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 

@@ -67,7 +67,7 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 Note note = mAdapter.getItem(viewHolder.getAdapterPosition());
-                mPresenter.deleteNote(note);
+                mPresenter.userSwipeOutNote(note);
             }
         });
 
@@ -86,7 +86,7 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchMenuItem.collapseActionView();
-                mPresenter.queryNotes(query);
+                mPresenter.userEnterQuery(query);
                 return false;
             }
 
@@ -101,7 +101,7 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SHOW_NOTE_REQUEST_CODE && resultCode == RESULT_OK) {
-            mPresenter.queryAllNotes();
+            mPresenter.userReturnToScreen();
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
@@ -110,7 +110,7 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        mPresenter.cancelQuery();
+        mPresenter.userLeaveScreen();
     }
 
     @Override
