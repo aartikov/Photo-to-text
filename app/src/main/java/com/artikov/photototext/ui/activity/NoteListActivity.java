@@ -2,6 +2,7 @@ package com.artikov.photototext.ui.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -55,46 +56,11 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
         initRecyclerView();
     }
 
-    private void initRecyclerView() {
-        NoteAdapter.OnItemClickListener onItemClickListener = (note, position) -> showNote(note);
-
-        ItemTouchHelper swipeToDismissHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                Note note = mAdapter.getItem(viewHolder.getAdapterPosition());
-                mPresenter.userSwipeOutNote(note);
-            }
-        });
-
-        mNotesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        mAdapter = new NoteAdapter(this, onItemClickListener);
-        mNotesRecyclerView.setAdapter(mAdapter);
-        swipeToDismissHelper.attachToRecyclerView(mNotesRecyclerView);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.note_list_menu, menu);
-        final MenuItem searchMenuItem = menu.findItem(R.id.note_list_menu_item_search);
-        final SearchView searchView = (SearchView) searchMenuItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                searchMenuItem.collapseActionView();
-                mPresenter.userEnterQuery(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
+        MenuItem searchMenuItem = menu.findItem(R.id.note_list_menu_item_search);
+        initSearchView(searchMenuItem);
         return true;
     }
 
@@ -110,7 +76,9 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        mPresenter.userLeaveScreen();
+        if(isFinishing()) {
+            mPresenter.userLeaveScreen();
+        }
     }
 
     @Override
@@ -135,6 +103,64 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
             mNotesRecyclerView.setVisibility(View.VISIBLE);
             mEmptyView.setVisibility(View.GONE);
         }
+    }
+
+    private void initRecyclerView() {
+        NoteAdapter.OnItemClickListener onItemClickListener = (note, position) -> showNote(note);
+
+        ItemTouchHelper swipeToDismissHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                Note note = mAdapter.getItem(viewHolder.getAdapterPosition());
+                mPresenter.userSwipeOutNote(note);
+            }
+        });
+
+        mNotesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        mAdapter = new NoteAdapter(this, onItemClickListener);
+        mNotesRecyclerView.setAdapter(mAdapter);
+        swipeToDismissHelper.attachToRecyclerView(mNotesRecyclerView);
+    }
+
+    private void initSearchView(MenuItem searchMenuItem) {
+        final SearchView searchView = (SearchView)searchMenuItem.getActionView();
+        String lastQuery = mPresenter.getLastQuery();
+        if(!lastQuery.isEmpty()) {
+            searchMenuItem.expandActionView();
+            searchView.setQuery(lastQuery, false);
+        }
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchView.clearFocus();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                mPresenter.userEnterQueryText(newText);
+                return true;
+            }
+        });
+
+        MenuItemCompat.setOnActionExpandListener(searchMenuItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                mPresenter.userCollapseSearchView();
+                return true;
+            }
+        });
     }
 
     private void showNote(Note note) {

@@ -10,12 +10,14 @@ import com.artikov.photototext.db.NoteDataSource;
 import com.artikov.photototext.views.NoteListView;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 /**
  * Date: 4/7/2016
@@ -26,26 +28,37 @@ import rx.schedulers.Schedulers;
 
 @InjectViewState
 public class NoteListPresenter extends MvpPresenter<NoteListView> {
+    private static final int QUERY_DEBOUNCE_TIMEOUT = 500;
     private NoteDataSource mNoteDataSource;
     private Subscription mNoteQuerySubscription;
+    private PublishSubject<String> mQueryDebounceSubject;
+    private String mLastQuery = "";
 
     public NoteListPresenter() {
         Context context = PhotoToTextApplication.getInstance();
         mNoteDataSource = new NoteDataSource(context);
+        mQueryDebounceSubject = PublishSubject.create();
+        mQueryDebounceSubject.debounce(QUERY_DEBOUNCE_TIMEOUT, TimeUnit.MILLISECONDS).subscribe(this::queryNotes);
     }
 
     @Override
     protected void onFirstViewAttach() {
         super.onFirstViewAttach();
+        getViewState().showProgress();
         queryAllNotes();
     }
 
-    public void userEnterQuery(String query) {
-        queryNotes(query);
+    public void userEnterQueryText(String query) {
+        mQueryDebounceSubject.onNext(query);
+    }
+
+    public void userCollapseSearchView() {
+        queryAllNotes();
     }
 
     public void userSwipeOutNote(Note note) {
-        deleteNote(note);
+        mNoteDataSource.delete(note);
+        queryNotes(mLastQuery);
     }
 
     public void userLeaveScreen() {
@@ -53,12 +66,16 @@ public class NoteListPresenter extends MvpPresenter<NoteListView> {
     }
 
     public void userReturnToScreen() {
-        queryAllNotes();
+        queryNotes(mLastQuery);
+    }
+
+    public String getLastQuery() {
+        return mLastQuery;
     }
 
     private void queryNotes(String query) {
+        mLastQuery = query;
         cancelQuery();
-        getViewState().showProgress();
         mNoteQuerySubscription = Observable.fromCallable(() -> mNoteDataSource.queryNotes(query))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(Schedulers.io())
@@ -89,10 +106,5 @@ public class NoteListPresenter extends MvpPresenter<NoteListView> {
             mNoteQuerySubscription.unsubscribe();
             getViewState().hideProgress();
         }
-    }
-
-    private void deleteNote(Note note) {
-        mNoteDataSource.delete(note);
-        queryAllNotes();
     }
 }
