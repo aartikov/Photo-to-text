@@ -1,4 +1,4 @@
-package com.artikov.photototext.ui.activity;
+package com.artikov.photototext.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;

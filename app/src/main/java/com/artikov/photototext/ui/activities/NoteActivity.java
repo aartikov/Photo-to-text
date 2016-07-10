@@ -1,4 +1,4 @@
-package com.artikov.photototext.ui.activity;
+package com.artikov.photototext.ui.activities;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
