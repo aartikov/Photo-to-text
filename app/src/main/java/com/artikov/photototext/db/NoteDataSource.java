@@ -25,12 +25,15 @@ public class NoteDataSource {
     public List<Note> queryNotes(String query) {
         try {
             if (query.isEmpty()) {
-                return mDatabaseHelper.getNoteDao().queryForAll();
+                return mDatabaseHelper.getNoteDao().queryBuilder()
+                        .orderBy(Note.Database.Column.ID, false).query();
             }
             String searchTemplate = "%" + query + "%";
             return mDatabaseHelper.getNoteDao().queryBuilder()
+                    .orderBy(Note.Database.Column.ID, false)
                     .where().like(Note.Database.Column.NAME, searchTemplate)
-                    .or().like(Note.Database.Column.TEXT, searchTemplate).query();
+                    .or().like(Note.Database.Column.TEXT, searchTemplate)
+                    .query();
         } catch (SQLException e) {
             e.printStackTrace();
             return Collections.emptyList();
