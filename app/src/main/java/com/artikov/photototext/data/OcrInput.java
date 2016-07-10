@@ -10,17 +10,17 @@ import android.net.Uri;
  */
 public class OcrInput {
     private Uri mImageUri;
-    private String mLanguage;
+    private String[] mLanguages;
 
-    public OcrInput(Uri imageUri, String language) {
+    public OcrInput(Uri imageUri, String[] languages) {
         mImageUri = imageUri;
-        mLanguage = language;
+        mLanguages = languages;
     }
     public Uri getImageUri() {
         return mImageUri;
     }
 
-    public String getLanguage() {
-        return mLanguage;
+    public String[] getLanguages() {
+        return mLanguages;
     }
 }

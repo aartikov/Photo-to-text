@@ -20,7 +20,7 @@ import rx.Observable;
 public interface OcrApi {
     @POST("processImage?exportFormat=txt")
     @Headers("Authorization: Basic")
-    Observable<OcrResponse> processImage(@Body RequestBody image, @Query("language") String language);
+    Observable<OcrResponse> processImage(@Body RequestBody image, @Query("language") String languages);     // languages can contain several languages separated with commas
 
     @GET("getTaskStatus")
     @Headers("Authorization: Basic")

@@ -1,11 +1,14 @@
 package com.artikov.photototext.presenters;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.support.v7.preference.PreferenceManager;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.artikov.photototext.PhotoToTextApplication;
+import com.artikov.photototext.R;
 import com.artikov.photototext.data.Note;
 import com.artikov.photototext.data.OcrInput;
 import com.artikov.photototext.data.OcrResult;
@@ -31,6 +34,9 @@ import rx.schedulers.Schedulers;
 
 @InjectViewState
 public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
+    private static final String MAIN_LANGUAGE_KEY = "main_language";
+    private static final String SECONDARY_LANGUAGE_KEY = "secondary_language";
+
     private Context mContext;
     private NoteDataSource mNoteDataSource;
     private OcrClient mOcrClient;
@@ -38,6 +44,7 @@ public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
 
     public PhotoCapturePresenter() {
         mContext = PhotoToTextApplication.getInstance();
+        PreferenceManager.setDefaultValues(mContext, R.xml.preferences, false);
         mNoteDataSource = new NoteDataSource(mContext);
         mOcrClient = new OcrClient(mContext);
         mOcrClient.getProgressObservable()
@@ -46,7 +53,7 @@ public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
     }
 
     public void userChooseImage(Uri imageUri) {
-        recognize(new OcrInput(imageUri, "English,Russian"));
+        recognize(new OcrInput(imageUri, getLanguages()));
     }
 
     public void userClickCancel() {
@@ -89,6 +96,14 @@ public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
             mOcrSubscription.unsubscribe();
             getViewState().hideProgress();
         }
+    }
+
+    private String[] getLanguages() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String[] languages = new String[2];
+        languages[0] = preferences.getString(MAIN_LANGUAGE_KEY, "");
+        languages[1] = preferences.getString(SECONDARY_LANGUAGE_KEY, "");
+        return languages;
     }
 
     private Note convertOcrResultToNote(OcrResult result) {

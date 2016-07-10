@@ -73,6 +73,9 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
             case R.id.photo_capture_menu_item_notes:
                 showNoteList();
                 return true;
+            case R.id.photo_capture_menu_item_settings:
+                showSettings();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -157,6 +160,12 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
 
     private void showNoteList() {
         Intent intent = new Intent(this, NoteListActivity.class);
+        startActivity(intent);
+        mPresenter.userLeaveScreen();
+    }
+
+    private void showSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
         mPresenter.userLeaveScreen();
     }

@@ -2,6 +2,7 @@ package com.artikov.photototext.network;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import com.artikov.photototext.data.OcrInput;
 import com.artikov.photototext.data.OcrProgress;
@@ -39,7 +40,7 @@ public class OcrClient {
     public Observable<OcrResult> recognize(OcrInput input) {
         mProgressSubject.onNext(OcrProgress.UPLOADING);
         return readImage(input.getImageUri())
-                .flatMap(image -> processImage(image, input.getLanguage()))
+                .flatMap(image -> processImage(image, input.getLanguages()))
                 .doOnNext(ignored -> mProgressSubject.onNext(OcrProgress.RECOGNITION))
                 .flatMap(task -> getResultUrl(task.getId()))
                 .doOnNext(ignored -> mProgressSubject.onNext(OcrProgress.DOWNLOADING))
@@ -58,8 +59,9 @@ public class OcrClient {
         });
     }
 
-    private Observable<OcrTask> processImage(RequestBody image, String language) {
-        return mOcrService.processImage(image, language).map(OcrResponse::getTask);
+    private Observable<OcrTask> processImage(RequestBody image, String[] languages) {
+        String joinedLanguages = TextUtils.join(",", languages);
+        return mOcrService.processImage(image, joinedLanguages).map(OcrResponse::getTask);
     }
 
     private Observable<String> getResultUrl(String taskId) {
