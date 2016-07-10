@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -20,6 +21,7 @@ import com.artikov.photototext.views.PhotoCaptureView;
 import java.util.Date;
 
 import retrofit2.adapter.rxjava.HttpException;
+import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -68,6 +70,13 @@ public class PhotoCapturePresenter extends MvpPresenter<PhotoCaptureView> {
         cancelRecognition();
         getViewState().showProgress();
         mOcrSubscription = mOcrClient.recognize(input)
+                .flatMap(result -> {
+                    if (TextUtils.isGraphic(result.getText())) {
+                        return Observable.just(result);
+                    } else {
+                        return Observable.error(new Exception(mContext.getString(R.string.nothing_is_recognized)));
+                    }
+                })
                 .map(this::convertOcrResultToNote)
                 .doOnNext(note -> mNoteDataSource.create(note))
                 .observeOn(AndroidSchedulers.mainThread())

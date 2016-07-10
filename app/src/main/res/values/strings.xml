@@ -9,11 +9,12 @@
     <string name="cancel">Cancel</string>
     <string name="default_photo_name">Photo.jpg</string>
 
-    <string name="uploading">Uploading...</string>
-    <string name="downloading">Downloading...</string>
-    <string name="recognition">Recognition...</string>
-    <string name="loading">Loading...</string>
+    <string name="uploading">Uploading…</string>
+    <string name="downloading">Downloading…</string>
+    <string name="recognition">Recognition…</string>
+    <string name="loading">Loading…</string>
     <string name="no_notes">No notes</string>
+    <string name="nothing_is_recognized">Nothing is recognized</string>
     <string name="search">Search</string>
 
     <string name="save">Save</string>
