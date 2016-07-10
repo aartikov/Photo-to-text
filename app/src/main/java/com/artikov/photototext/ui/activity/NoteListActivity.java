@@ -3,6 +3,7 @@ package com.artikov.photototext.ui.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -54,6 +55,10 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
         setContentView(R.layout.activity_note_list);
         ButterKnife.bind(this);
         initRecyclerView();
+        ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -62,6 +67,18 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
         MenuItem searchMenuItem = menu.findItem(R.id.note_list_menu_item_search);
         initSearchView(searchMenuItem);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                mPresenter.userLeaveScreen();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -167,5 +184,6 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
         Intent intent = new Intent(this, NoteActivity.class);
         intent.putExtra(NoteActivity.NOTE_EXTRA, note);
         startActivityForResult(intent, SHOW_NOTE_REQUEST_CODE);
+        mPresenter.userLeaveScreen();
     }
 }
