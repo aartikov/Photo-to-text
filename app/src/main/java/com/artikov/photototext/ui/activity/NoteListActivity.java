@@ -83,7 +83,7 @@ public class NoteListActivity extends MvpAppCompatActivity implements NoteListVi
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SHOW_NOTE_REQUEST_CODE && resultCode == RESULT_OK) {
+        if (requestCode == SHOW_NOTE_REQUEST_CODE) {
             mPresenter.userReturnToScreen();
         } else {
             super.onActivityResult(requestCode, resultCode, data);

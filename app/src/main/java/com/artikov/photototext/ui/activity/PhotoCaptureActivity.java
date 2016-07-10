@@ -71,9 +71,7 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.photo_capture_menu_item_notes:
-                Intent intent = new Intent(this, NoteListActivity.class);
-                startActivity(intent);
-                mPresenter.userLeaveScreen();
+                showNoteList();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -155,5 +153,11 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
     private Uri getPhotoUri() {
         File photoFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), getString(R.string.default_photo_name));
         return Uri.fromFile(photoFile);
+    }
+
+    private void showNoteList() {
+        Intent intent = new Intent(this, NoteListActivity.class);
+        startActivity(intent);
+        mPresenter.userLeaveScreen();
     }
 }

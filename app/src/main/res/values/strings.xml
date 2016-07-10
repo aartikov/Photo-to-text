@@ -14,4 +14,10 @@
     <string name="loading">Loading...</string>
     <string name="no_notes">No notes</string>
     <string name="search">Search</string>
+
+    <string name="save">Save</string>
+    <string name="save_note">Save note</string>
+    <string name="note_save_confirmation">Note has been modified, save changes?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>
