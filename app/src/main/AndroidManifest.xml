@@ -4,8 +4,13 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="18" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18"/>
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false"/>
 
     <application
         android:name=".PhotoToTextApplication"
@@ -20,7 +25,9 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.NoteActivity"/>
+        <activity
+            android:name=".ui.activities.NoteActivity"
+            android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".ui.activities.NoteListActivity"/>
         <activity android:name=".ui.activities.SettingsActivity"/>
     </application>
