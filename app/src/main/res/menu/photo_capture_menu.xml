@@ -4,11 +4,11 @@
     <item
         android:id="@+id/photo_capture_menu_item_notes"
         android:title="@string/notes"
-        android:icon="@drawable/ic_notes"
+        android:icon="@drawable/ic_library_books_white_24dp"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/photo_capture_menu_item_settings"
         android:title="@string/settings"
-        android:icon="@drawable/ic_settings"
+        android:icon="@drawable/ic_settings_white_24dp"
         app:showAsAction="ifRoom"/>
 </menu>
