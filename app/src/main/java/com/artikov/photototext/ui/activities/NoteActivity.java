@@ -142,7 +142,7 @@ public class NoteActivity extends MvpAppCompatActivity implements NoteView {
                 .setMessage(R.string.note_save_confirmation)
                 .setPositiveButton(R.string.yes, (dialogInterface, i) -> mPresenter.userConfirmSave())
                 .setNegativeButton(R.string.no, (dialogInterface, i) -> mPresenter.userDeclineSave())
-                .setNeutralButton(android.R.string.cancel, (dialogInterface, i) -> mPresenter.userCancelSave())
+                .setNeutralButton(R.string.cancel, (dialogInterface, i) -> mPresenter.userCancelSave())
                 .setOnCancelListener(dialogInterface -> mPresenter.userCancelSave())
                 .show();
     }
