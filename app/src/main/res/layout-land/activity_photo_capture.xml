@@ -16,46 +16,60 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_margin="@dimen/image_buttons_margins"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/activity_photo_capture_button_choose_in_gallery"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="4"
-            android:background="@android:color/transparent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/choose_in_gallery_button"
-            tools:ignore="ContentDescription"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/choose_in_gallery"
-            android:textSize="@dimen/image_buttons_text_size"/>
+            <ImageButton
+                android:id="@+id/activity_photo_capture_button_choose_in_gallery"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"
+                android:src="@drawable/choose_in_gallery_button"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/choose_in_gallery"
+                android:textSize="@dimen/image_buttons_text_size"/>
+        </LinearLayout>
 
         <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"/>
 
-        <ImageButton
-            android:id="@+id/activity_photo_capture_button_take_photo"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="4"
-            android:background="@android:color/transparent"
-            android:scaleType="fitCenter"
-            android:src="@drawable/take_photo_button"
-            tools:ignore="ContentDescription"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/take_a_photo"
-            android:textSize="@dimen/image_buttons_text_size"/>
+            <ImageButton
+                android:id="@+id/activity_photo_capture_button_take_photo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"
+                android:src="@drawable/take_photo_button"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/take_a_photo"
+                android:textSize="@dimen/image_buttons_text_size"/>
+        </LinearLayout>
     </LinearLayout>
 
     <FrameLayout

@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,10 +40,10 @@ public class PhotoCaptureActivity extends MvpAppCompatActivity implements PhotoC
     TextView mProgressTextView;
 
     @BindView(R.id.activity_photo_capture_button_choose_in_gallery)
-    Button mChooseInGalleryButton;
+    ImageButton mChooseInGalleryButton;
 
     @BindView(R.id.activity_photo_capture_button_take_photo)
-    Button mTakePhotoButton;
+    ImageButton mTakePhotoButton;
 
     @BindView(R.id.activity_photo_capture_button_cancel)
     Button mCancelButton;

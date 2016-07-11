@@ -3,4 +3,7 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="card_margin">8dp</dimen>
+    <dimen name="progress_bar_text_size">16sp</dimen>
+    <dimen name="image_buttons_text_size">18sp</dimen>
+    <dimen name="image_buttons_margins">20dp</dimen>
 </resources>
